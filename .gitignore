@@ -1,0 +1,52 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Environment / Secrets (NEVER commit these) ─────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
+dist/
+build/
+.vite/
+
+# ── SQLite database (contains real user data) ─────────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+
+# ── Uploads (user-uploaded files) ─────────────────────────────────────────────
+backend/uploads/
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+ocr_debug.log
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# ── OS generated ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor ────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── OCR training data (large binary) ──────────────────────────────────────────
+*.traineddata
+
+# ── DeepSeek model folder (large, downloaded separately) ──────────────────────
+DeepSeek-OCR-2/

@@ -1,0 +1,21 @@
+/**
+ * RBAC authorization middleware factory.
+ * Usage: router.get('/admin-only', authenticate, authorize('admin'), handler)
+ *        router.get('/doctors', authenticate, authorize('doctor', 'admin'), handler)
+ */
+const authorize = (...roles) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: 'Not authenticated.' });
+        }
+        if (!roles.includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: `Access denied. Required role: ${roles.join(' or ')}.`
+            });
+        }
+        next();
+    };
+};
+
+module.exports = authorize;

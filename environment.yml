@@ -1,0 +1,22 @@
+name: tp_env
+channels:
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.10
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pip
+  - pip:
+    - transformers==4.46.3
+    - tokenizers==0.20.3
+    - PyMuPDF
+    - img2pdf
+    - einops
+    - easydict
+    - addict
+    - Pillow
+    - vocab
+    - sentencepiece
+    - numpy
