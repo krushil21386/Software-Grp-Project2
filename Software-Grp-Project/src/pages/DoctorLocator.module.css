@@ -1,0 +1,371 @@
+.container {
+  min-height: calc(100vh - 80px);
+  padding: 40px 80px 32px 80px;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  animation: pageFadeIn 0.9s ease-out both;
+  background-color: var(--color-white);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 46px;
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--color-charcoal);
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--color-text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.filterSection {
+  max-width: 1200px;
+  margin: 0 auto 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.filterLabel {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.select {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-white);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 250px;
+  transition: all 0.3s ease;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-crimson);
+  box-shadow: 0 0 0 1px rgba(177, 18, 38, 0.2);
+}
+
+.select option {
+  background: var(--color-white);
+  color: var(--color-text-primary);
+}
+
+.content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 32px;
+}
+
+.mapSection {
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+}
+
+.mapContainer {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  height: 600px;
+  border: 1px solid var(--color-border);
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+/* Leaflet map styling */
+.mapContainer :global(.leaflet-container) {
+  background-color: var(--color-bg-light);
+  border-radius: 16px;
+  height: 100%;
+}
+
+.mapContainer :global(.leaflet-popup-content-wrapper) {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+}
+
+.mapContainer :global(.leaflet-popup-content) {
+  margin: 12px;
+  font-family: inherit;
+}
+
+
+.resultsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.resultsTitle {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.doctorsList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.doctorCard {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
+}
+
+.doctorCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(44, 44, 44, 0.15);
+}
+
+.doctorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.doctorInfo {
+  flex: 1;
+}
+
+.doctorName {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-charcoal);
+}
+
+.doctorSpecialty {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stars {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.reviews {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.doctorImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.doctorImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hospitalInfo {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hospitalName {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--color-charcoal);
+}
+
+.hospitalAddress,
+.hospitalPhone {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.distanceInfo {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.distanceItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.distanceLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.distanceValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-charcoal);
+}
+
+.trafficBadge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-white);
+  background-color: var(--color-crimson);
+}
+
+.doctorDetails {
+  margin-bottom: 20px;
+}
+
+.fee {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--color-crimson);
+}
+
+.availability {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.viewProfileButton,
+.bookButton {
+  flex: 1;
+  padding: 12px 24px;
+  border-radius: 10px;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.viewProfileButton {
+  background-color: var(--color-white);
+  color: var(--color-charcoal);
+  border-color: var(--color-border);
+}
+
+.viewProfileButton:hover {
+  background-color: var(--color-bg-light);
+  border-color: var(--color-crimson);
+  transform: translateY(-2px);
+}
+
+.bookButton {
+  background-color: var(--color-crimson);
+  color: var(--color-white);
+  box-shadow: 0 4px 16px rgba(177, 18, 38, 0.3);
+}
+
+.bookButton:hover {
+  background-color: var(--color-crimson-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(177, 18, 38, 0.4);
+}
+
+.noResults {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: var(--color-bg-light);
+  border-radius: 16px;
+  color: var(--color-text-muted);
+}
+
+.loading {
+  text-align: center;
+  padding: 100px;
+  font-size: 24px;
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 1024px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+
+  .mapSection {
+    position: relative;
+    top: 0;
+  }
+
+  .mapContainer {
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+
+  .filterSection {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .select {
+    width: 100%;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+  }
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

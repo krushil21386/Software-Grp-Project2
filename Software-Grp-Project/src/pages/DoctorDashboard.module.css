@@ -1,0 +1,456 @@
+.container {
+  min-height: calc(100vh - 80px);
+  padding: 40px 80px 32px 80px;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  animation: pageFadeIn 0.9s ease-out both;
+  background-color: var(--color-white);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 35px rgba(220, 20, 60, 0.3);
+}
+
+.profileImage {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #cbd5e0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.statCard {
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 35px rgba(220, 20, 60, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+}
+
+.statIcon {
+  font-size: 48px;
+}
+
+.statInfo h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  margin-bottom: -2px;
+}
+
+.tab:hover {
+  color: #ffffff;
+}
+
+.tab.active {
+  color: #ffffff;
+  border-bottom-color: var(--color-crimson-soft);
+}
+
+.appointmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.appointmentCard {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.appointmentCard:hover {
+  transform: translateX(8px);
+}
+
+.appointmentTime {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.time {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.date {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.appointmentDetails {
+  flex: 1;
+}
+
+.patientName {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.reason {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 4px;
+}
+
+.hospital {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.appointmentActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.actionButton,
+.completeButton,
+.cancelButton {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.actionButton {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.actionButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.completeButton {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+}
+
+.completeButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.cancelButton {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.cancelButton:hover {
+  background: rgba(239, 68, 68, 0.5);
+}
+
+.acceptButton {
+  background: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.acceptButton:hover {
+  background: rgba(16, 185, 129, 0.5);
+}
+
+.rejectButton {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.rejectButton:hover {
+  background: rgba(239, 68, 68, 0.5);
+}
+
+.availabilitySection {
+  padding: 24px;
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--color-crimson-soft);
+}
+
+.availabilityGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.availabilityCard {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.availabilityHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.availabilityHeader h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(148, 163, 184, 0.3);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle input:checked + .slider {
+  background-color: var(--color-crimson-soft);
+}
+
+.toggle input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.timeInputs {
+  display: flex;
+  gap: 12px;
+}
+
+.timeGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeGroup label {
+  font-size: 12px;
+  color: #a0aec0;
+}
+
+.timeGroup input {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background-color: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+.timeGroup input:focus {
+  outline: none;
+  border-color: var(--color-crimson-soft);
+  box-shadow: 0 0 0 1px rgba(220, 20, 60, 0.4);
+}
+
+.saveButton {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--color-crimson), var(--color-crimson-dark));
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 16px 40px rgba(220, 20, 60, 0.7);
+  transition: all 0.25s ease;
+}
+
+.saveButton:hover {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 0 26px rgba(220, 20, 60, 0.95);
+}
+
+.completedBadge {
+  padding: 8px 16px;
+  background: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px;
+  }
+
+  .profileHeader {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .appointmentCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .appointmentTime {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .appointmentActions {
+    flex-direction: column;
+  }
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

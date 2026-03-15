@@ -1,0 +1,565 @@
+.signupPage {
+  min-height: calc(100vh - 80px);
+  padding: 40px 80px 32px 80px;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  animation: signupFadeIn 0.9s ease-out both;
+  transition: background 0.6s ease-out;
+  background-color: var(--color-white);
+}
+
+.patientBg {
+  background-color: var(--color-white);
+}
+
+.doctorBg {
+  background-color: var(--color-white);
+}
+
+.topBar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+}
+
+.topBarText {
+  margin-right: 6px;
+}
+
+.signInLink {
+  color: var(--color-crimson);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.signInLink:hover {
+  color: var(--color-crimson-dark);
+  text-decoration: underline;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1.2fr 1.1fr;
+  gap: 64px;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.leftPanel {
+  max-width: 520px;
+}
+
+.chip {
+  border: none;
+  background-color: var(--color-crimson);
+  color: var(--color-white);
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.heading {
+  font-size: 46px;
+  line-height: 1.2;
+  font-weight: 800;
+  margin: 0 0 20px 0;
+  color: var(--color-charcoal);
+}
+
+.highlight {
+  color: var(--color-crimson);
+}
+
+.subheading {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  margin-bottom: 32px;
+}
+
+.featureList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.featureIconShield,
+.featureIconBolt {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+.featureIconShield {
+  background-color: var(--color-crimson);
+}
+
+.featureIconBolt {
+  background-color: var(--color-charcoal);
+}
+
+.featureTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-charcoal);
+}
+
+.featureDescription {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.rightPanel {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.formCard {
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 28px 32px 28px;
+  border-radius: 24px;
+  background: linear-gradient(
+    150deg,
+    rgba(220, 20, 60, 0.35),
+    var(--color-surface-elevated)
+  );
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 35px rgba(220, 20, 60, 0.35);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  position: relative;
+  transform: translateY(14px);
+  opacity: 0;
+  animation: cardRise 0.9s ease-out 0.1s forwards;
+}
+
+.cardTopAccent {
+  position: absolute;
+  top: 0;
+  left: 40px;
+  right: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-crimson), var(--color-crimson-soft));
+}
+
+.cardHeader {
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+.cardSubtitle {
+  display: block;
+  font-size: 12px;
+  color: #a0aec0;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.toggleGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: rgba(15, 23, 42, 0.9);
+  padding: 4px;
+  border-radius: 999px;
+}
+
+.toggleButton {
+  border: none;
+  background: transparent;
+  color: #cbd5e0;
+  font-size: 13px;
+  padding: 8px 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.activeToggle {
+  background: linear-gradient(135deg, var(--color-crimson), var(--color-crimson-dark));
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(220, 20, 60, 0.6);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.formVariant {
+  animation: formSwitch 0.25s ease-out;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: #a0aec0;
+  text-transform: uppercase;
+}
+
+.input {
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background-color: rgba(15, 23, 42, 0.8);
+  padding: 10px 12px;
+  color: #e2e8f0;
+  font-size: 14px;
+  width: 100%;
+}
+
+.input::placeholder {
+  color: #718096;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-crimson-soft);
+  box-shadow: 0 0 0 1px rgba(220, 20, 60, 0.4);
+}
+
+.primaryButton {
+  margin-top: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, var(--color-crimson), var(--color-crimson-dark));
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 16px 40px rgba(220, 20, 60, 0.7);
+  transition: box-shadow 0.25s ease, transform 0.2s ease, filter 0.2s ease;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primaryButton:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 0 26px rgba(220, 20, 60, 0.95);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background-color: rgba(148, 163, 184, 0.4);
+}
+
+.dividerText {
+  font-size: 11px;
+  color: #a0aec0;
+  letter-spacing: 0.16em;
+}
+
+.socialRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.socialButton {
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background-color: rgba(15, 23, 42, 0.85);
+  color: #e2e8f0;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.socialButton:hover {
+  background-color: rgba(30, 64, 175, 0.6);
+  transform: translateY(-1px);
+}
+
+.termsText {
+  margin-top: 12px;
+  font-size: 11px;
+  color: #718096;
+  line-height: 1.5;
+}
+
+.termsText a {
+  color: var(--color-crimson-soft);
+  text-decoration: none;
+}
+
+.termsText a:hover {
+  text-decoration: underline;
+}
+
+.backHomeLink {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #cbd5e0;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.backHomeLink:hover {
+  text-decoration: underline;
+}
+
+.footerNote {
+  margin-top: 32px;
+  font-size: 11px;
+  color: #718096;
+  text-align: center;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .signupPage {
+    padding: 40px 40px 32px 40px;
+  }
+  
+  .content {
+    gap: 48px;
+  }
+  
+  .heading {
+    font-size: 40px;
+  }
+  
+  .formCard {
+    max-width: 400px;
+  }
+}
+
+/* Small tablets */
+@media (max-width: 768px) {
+  .signupPage {
+    padding: 32px 24px 24px 24px;
+  }
+  
+  .content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .leftPanel {
+    max-width: 100%;
+    text-align: center;
+  }
+  
+  .heading {
+    font-size: 36px;
+  }
+  
+  .subheading {
+    font-size: 15px;
+  }
+  
+  .featureItem {
+    justify-content: center;
+  }
+  
+  .rightPanel {
+    justify-content: center;
+  }
+  
+  .formCard {
+    max-width: 100%;
+  }
+  
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile devices (Android phones) */
+@media (max-width: 480px) {
+  .signupPage {
+    padding: 24px 16px 20px 16px;
+    min-height: calc(100vh - 60px);
+  }
+  
+  .topBar {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .content {
+    gap: 32px;
+  }
+  
+  .chip {
+    font-size: 10px;
+    padding: 5px 14px;
+    margin-bottom: 16px;
+  }
+  
+  .heading {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+  
+  .subheading {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  
+  .featureList {
+    gap: 12px;
+  }
+  
+  .featureItem {
+    gap: 12px;
+  }
+  
+  .featureIconShield,
+  .featureIconBolt {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+  
+  .featureTitle {
+    font-size: 14px;
+  }
+  
+  .featureDescription {
+    font-size: 13px;
+  }
+  
+  .formCard {
+    padding: 24px 20px 28px 20px;
+  }
+  
+  .cardHeader {
+    margin-top: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .cardSubtitle {
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+  
+  .toggleButton {
+    font-size: 12px;
+    padding: 6px 0;
+  }
+  
+  .form {
+    gap: 14px;
+  }
+  
+  .label {
+    font-size: 10px;
+  }
+  
+  .input {
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+  
+  .primaryButton {
+    font-size: 14px;
+    padding: 11px 16px;
+    margin-top: 6px;
+  }
+  
+  .dividerText {
+    font-size: 10px;
+  }
+  
+  .socialButton {
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+  
+  .termsText {
+    font-size: 10px;
+  }
+  
+  .backHomeLink {
+    font-size: 12px;
+  }
+  
+  .footerNote {
+    font-size: 10px;
+    margin-top: 24px;
+  }
+  
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes signupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardRise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes formSwitch {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

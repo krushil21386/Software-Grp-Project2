@@ -1,0 +1,212 @@
+.section {
+    background-color: var(--color-bg-light);
+    padding: 80px 80px;
+    transition: all 0.3s ease;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 48px;
+}
+
+.headerLeft {
+    flex: 1;
+    max-width: 600px;
+}
+
+.title {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--color-charcoal);
+    margin: 0 0 16px 0;
+    line-height: 1.2;
+}
+
+.description {
+    font-size: 18px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.viewAllLink {
+    color: var(--color-crimson);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.viewAllLink:hover {
+    color: var(--color-crimson-dark);
+}
+
+.cardsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.serviceCard {
+    background-color: var(--color-white);
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px var(--color-shadow);
+    transition: all 0.3s ease;
+    border: 1px solid var(--color-border);
+}
+
+.serviceCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(44, 44, 44, 0.15);
+}
+
+.iconContainer {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    background-color: rgba(177, 18, 38, 0.1);
+    transition: all 0.3s ease;
+}
+
+.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cardTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-charcoal);
+    margin: 0 0 12px 0;
+}
+
+.cardDescription {
+    font-size: 16px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .section {
+        padding: 60px 40px;
+    }
+    
+    .title {
+        font-size: 36px;
+    }
+    
+    .description {
+        font-size: 16px;
+    }
+    
+    .cardsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .serviceCard {
+        padding: 24px;
+    }
+}
+
+/* Small tablets */
+@media (max-width: 768px) {
+    .section {
+        padding: 50px 24px;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    
+    .headerLeft {
+        max-width: 100%;
+    }
+    
+    .title {
+        font-size: 32px;
+    }
+    
+    .description {
+        font-size: 15px;
+    }
+    
+    .viewAllLink {
+        align-self: flex-start;
+    }
+    
+    .cardsGrid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .serviceCard {
+        padding: 24px;
+    }
+}
+
+/* Mobile devices (Android phones) */
+@media (max-width: 480px) {
+    .section {
+        padding: 40px 16px;
+    }
+    
+    .header {
+        margin-bottom: 32px;
+    }
+    
+    .title {
+        font-size: 26px;
+        margin-bottom: 12px;
+    }
+    
+    .description {
+        font-size: 14px;
+    }
+    
+    .viewAllLink {
+        font-size: 14px;
+    }
+    
+    .cardsGrid {
+        gap: 16px;
+    }
+    
+    .serviceCard {
+        padding: 20px;
+    }
+    
+    .iconContainer {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 16px;
+    }
+    
+    .icon {
+        font-size: 24px;
+    }
+    
+    .cardTitle {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    
+    .cardDescription {
+        font-size: 14px;
+    }
+}

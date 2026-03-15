@@ -1,0 +1,291 @@
+.container {
+  min-height: calc(100vh - 80px);
+  padding: 40px 80px 32px 80px;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  animation: pageFadeIn 0.9s ease-out both;
+  background-color: var(--color-white);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.title {
+  font-size: 46px;
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--color-charcoal);
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--color-text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form {
+  max-width: 900px;
+  margin: 0 auto 48px;
+  background-color: var(--color-white);
+  border-radius: 24px;
+  padding: 40px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 32px rgba(44, 44, 44, 0.12);
+  transition: all 0.3s ease;
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.textarea,
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-white);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.textarea::placeholder,
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.textarea:focus,
+.input:focus {
+  outline: none;
+  border-color: var(--color-crimson);
+  box-shadow: 0 0 0 1px rgba(177, 18, 38, 0.2);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: none;
+  background-color: var(--color-crimson);
+  color: var(--color-white);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+  box-shadow: 0 16px 40px rgba(220, 20, 60, 0.6);
+  margin-top: 8px;
+}
+
+.submitButton:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 0 26px rgba(220, 20, 60, 0.8);
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.results {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.warningBox {
+  background: rgba(239, 68, 68, 0.2);
+  border: 2px solid #ef4444;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.warningBox h3 {
+  font-size: 20px;
+  margin-bottom: 12px;
+  color: #ffcccc;
+}
+
+.warningBox p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.matchedSymptoms {
+  margin-bottom: 32px;
+}
+
+.matchedSymptoms h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.symptomTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tag {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.suggestions {
+  margin-bottom: 32px;
+}
+
+.suggestions h3 {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.medicineCard {
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.2), rgba(17, 24, 39, 0.95));
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 35px rgba(220, 20, 60, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.medicineCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8), 0 0 35px rgba(220, 20, 60, 0.4);
+}
+
+.medicineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.medicineHeader h4 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.confidence {
+  background: rgba(16, 185, 129, 0.3);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.medicineDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detailItem {
+  display: flex;
+  gap: 12px;
+}
+
+.detailLabel {
+  font-weight: 600;
+  min-width: 100px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.precautions {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.symptomBadge {
+  margin-top: 12px;
+  display: inline-block;
+  background: rgba(220, 20, 60, 0.3);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.noResults {
+  text-align: center;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+.disclaimer {
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.2), rgba(17, 24, 39, 0.95));
+  backdrop-filter: blur(16px);
+  border-left: 4px solid #DC143C;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  margin-top: 32px;
+}
+
+.disclaimer p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #cbd5e0;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+
+  .form {
+    padding: 24px;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

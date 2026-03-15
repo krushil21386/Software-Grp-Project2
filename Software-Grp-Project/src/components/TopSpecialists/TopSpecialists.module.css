@@ -1,0 +1,208 @@
+.section {
+    background-color: var(--color-white);
+    padding: 80px 80px;
+    transition: all 0.3s ease;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.title {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--color-charcoal);
+    margin: 0 0 16px 0;
+    line-height: 1.2;
+}
+
+.description {
+    font-size: 18px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cardsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+
+.specialistCard {
+    background-color: var(--color-white);
+    padding: 32px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px var(--color-shadow);
+    border: 1px solid var(--color-border);
+    transition: all 0.3s ease;
+}
+
+.specialistCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(44, 44, 44, 0.15);
+}
+
+.profileImage {
+    margin-bottom: 20px;
+}
+
+.imagePlaceholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: var(--color-crimson);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-white);
+    font-size: 36px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.name {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-charcoal);
+    margin: 0 0 8px 0;
+}
+
+.specialty {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-crimson);
+    margin-bottom: 16px;
+}
+
+.cardDescription {
+    font-size: 16px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+}
+
+.viewProfileButton {
+    padding: 10px 24px;
+    background-color: var(--color-crimson);
+    color: var(--color-white);
+    border: 2px solid var(--color-crimson);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.viewProfileButton:hover {
+    background-color: var(--color-crimson-dark);
+    border-color: var(--color-crimson-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(177, 18, 38, 0.3);
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .section {
+        padding: 60px 40px;
+    }
+    
+    .title {
+        font-size: 36px;
+    }
+    
+    .description {
+        font-size: 16px;
+    }
+    
+    .cardsGrid {
+        gap: 24px;
+    }
+    
+    .specialistCard {
+        padding: 28px;
+    }
+}
+
+/* Small tablets */
+@media (max-width: 768px) {
+    .section {
+        padding: 50px 24px;
+    }
+    
+    .title {
+        font-size: 32px;
+    }
+    
+    .description {
+        font-size: 15px;
+    }
+    
+    .cardsGrid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .specialistCard {
+        padding: 28px;
+    }
+}
+
+/* Mobile devices (Android phones) */
+@media (max-width: 480px) {
+    .section {
+        padding: 40px 16px;
+    }
+    
+    .header {
+        margin-bottom: 32px;
+    }
+    
+    .title {
+        font-size: 26px;
+        margin-bottom: 12px;
+    }
+    
+    .description {
+        font-size: 14px;
+    }
+    
+    .cardsGrid {
+        gap: 20px;
+    }
+    
+    .specialistCard {
+        padding: 24px;
+    }
+    
+    .imagePlaceholder {
+        width: 100px;
+        height: 100px;
+        font-size: 32px;
+    }
+    
+    .name {
+        font-size: 20px;
+    }
+    
+    .specialty {
+        font-size: 14px;
+    }
+    
+    .cardDescription {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    
+    .viewProfileButton {
+        font-size: 14px;
+        padding: 8px 20px;
+    }
+}

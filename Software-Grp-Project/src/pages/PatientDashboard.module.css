@@ -1,0 +1,393 @@
+.container {
+  min-height: calc(100vh - 80px);
+  padding: 40px 80px 32px 80px;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  animation: pageFadeIn 0.9s ease-out both;
+  background-color: var(--color-white);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 46px;
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--color-charcoal);
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+.bookButton {
+  padding: 12px 18px;
+  border-radius: 999px;
+  background-color: var(--color-crimson);
+  color: var(--color-white);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(177, 18, 38, 0.3);
+}
+
+.bookButton:hover {
+  background-color: var(--color-crimson-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(177, 18, 38, 0.4);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.statCard {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+}
+
+.statIcon {
+  font-size: 48px;
+}
+
+.statInfo h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--color-crimson);
+}
+
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.actionCard {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
+}
+
+.actionCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(44, 44, 44, 0.15);
+  border-color: var(--color-crimson);
+}
+
+.actionIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.actionCard h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-charcoal);
+}
+
+.actionCard p {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  margin-bottom: -2px;
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.tab.active {
+  color: var(--color-crimson);
+  border-bottom-color: var(--color-crimson);
+}
+
+.appointmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.appointmentCard {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
+}
+
+.appointmentCard:hover {
+  transform: translateX(8px);
+  box-shadow: 0 8px 24px rgba(44, 44, 44, 0.15);
+}
+
+.appointmentTime {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+  padding: 16px;
+  background-color: var(--color-bg-light);
+  border-radius: 12px;
+}
+
+.time {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--color-crimson);
+}
+
+.date {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.appointmentDetails {
+  flex: 1;
+}
+
+.doctorName {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-charcoal);
+}
+
+.specialty {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.reason {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.hospital {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.doctorImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--color-border);
+}
+
+.doctorImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.appointmentActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 120px;
+}
+
+.viewButton,
+.cancelButton {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+}
+
+.viewButton {
+  background-color: var(--color-white);
+  color: var(--color-charcoal);
+  border: 1px solid var(--color-border);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+}
+
+.viewButton:hover {
+  background-color: var(--color-bg-light);
+  border-color: var(--color-crimson);
+}
+
+.rescheduleButton {
+  background-color: var(--color-white);
+  color: var(--color-crimson);
+  border: 1px solid var(--color-crimson);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+}
+
+.rescheduleButton:hover {
+  background-color: var(--color-crimson);
+  color: var(--color-white);
+}
+
+.cancelButton {
+  background-color: var(--color-white);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.cancelButton:hover {
+  background: rgba(239, 68, 68, 0.5);
+}
+
+.completedBadge {
+  padding: 8px 16px;
+  background: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px;
+  background-color: var(--color-bg-light);
+  border-radius: 16px;
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+.bookLink {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 12px 18px;
+  background-color: var(--color-crimson);
+  color: var(--color-white);
+  text-decoration: none;
+  border-radius: 999px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(177, 18, 38, 0.3);
+  transition: all 0.3s ease;
+}
+
+.bookLink:hover {
+  background-color: var(--color-crimson-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(177, 18, 38, 0.4);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+
+  .appointmentCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .appointmentTime {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

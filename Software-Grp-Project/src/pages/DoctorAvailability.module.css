@@ -1,0 +1,292 @@
+.container {
+  min-height: calc(100vh - 80px);
+  padding: 40px 80px 32px 80px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  animation: pageFadeIn 0.9s ease-out both;
+  background: radial-gradient(circle at 90% 20%, var(--color-crimson-dark) 0, var(--color-bg-charcoal) 35%, #020617 100%);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 46px;
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #cbd5e0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 20px;
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.navButton {
+  padding: 10px 20px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.navButton:hover {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(148, 163, 184, 0.7);
+}
+
+.weekInfo {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-crimson-soft);
+}
+
+.heatmap {
+  margin-bottom: 40px;
+}
+
+.heatmapGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 16px;
+}
+
+.heatmapDay {
+  display: flex;
+  flex-direction: column;
+}
+
+.dayHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px;
+}
+
+.dayHeader h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.date {
+  font-size: 12px;
+  color: #a0aec0;
+}
+
+.heatmapCell {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.heatmapCell:hover {
+  transform: scale(1.05);
+  border-color: rgba(148, 163, 184, 0.5);
+}
+
+.cellContent {
+  text-align: center;
+  padding: 8px;
+}
+
+.availabilityText {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: #ffffff;
+}
+
+.bookedCount {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #ffffff;
+}
+
+.percentage {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-crimson-soft);
+}
+
+.unavailable {
+  color: #718096;
+  font-size: 12px;
+}
+
+.availabilitySettings {
+  margin-top: 40px;
+}
+
+.sectionTitle {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--color-crimson-soft);
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.settingCard {
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
+  backdrop-filter: blur(16px);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.settingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.dayName {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(148, 163, 184, 0.3);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle input:checked + .slider {
+  background-color: var(--color-crimson-soft);
+}
+
+.toggle input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.timeInputs {
+  display: flex;
+  gap: 12px;
+}
+
+.timeGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeGroup label {
+  font-size: 12px;
+  color: #a0aec0;
+}
+
+.timeGroup input {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background-color: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+.timeGroup input:focus {
+  outline: none;
+  border-color: var(--color-crimson-soft);
+  box-shadow: 0 0 0 1px rgba(220, 20, 60, 0.4);
+}
+
+@media (max-width: 1200px) {
+  .heatmapGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px;
+  }
+
+  .heatmapGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

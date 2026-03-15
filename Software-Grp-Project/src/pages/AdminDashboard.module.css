@@ -1,0 +1,408 @@
+.container {
+  min-height: calc(100vh - 80px);
+  padding: 40px 80px 32px 80px;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  animation: pageFadeIn 0.9s ease-out both;
+  background-color: var(--color-white);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 46px;
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--color-charcoal);
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--color-text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.statCard {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
+}
+
+.statIcon {
+  font-size: 48px;
+}
+
+.statInfo h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #cbd5e0;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  border-bottom: 2px solid rgba(148, 163, 184, 0.25);
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: #a0aec0;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  margin-bottom: -2px;
+}
+
+.tab:hover {
+  color: #ffffff;
+}
+
+.tab.active {
+  color: #ffffff;
+  border-bottom-color: #DC143C;
+}
+
+.content {
+  min-height: 400px;
+}
+
+.sectionTitle {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #DC143C;
+}
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.overviewCard {
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.2), rgba(17, 24, 39, 0.95));
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.overviewCard h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.healthIndicator {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.healthStatus {
+  font-size: 18px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.healthBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.healthFill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  transition: width 0.3s ease;
+}
+
+.activityList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activityList li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  color: #cbd5e0;
+}
+
+.activityList li:last-child {
+  border-bottom: none;
+}
+
+.statusBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.statusItem {
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  color: #cbd5e0;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.2), rgba(17, 24, 39, 0.95));
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  border-bottom: 2px solid rgba(148, 163, 184, 0.3);
+}
+
+.table th {
+  text-align: left;
+  padding: 12px;
+  font-weight: 600;
+  color: #DC143C;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.table td {
+  padding: 12px;
+  color: #cbd5e0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.table tbody tr:hover {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.roleBadge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.roleBadge.patient {
+  background: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.roleBadge.doctor {
+  background: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.statusBadge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusBadge.active {
+  background: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.statusBadge.inactive {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.toggleButton,
+.editButton,
+.deleteButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggleButton {
+  background: rgba(220, 20, 60, 0.3);
+  color: #f05261;
+  border: 1px solid rgba(220, 20, 60, 0.5);
+}
+
+.toggleButton:hover {
+  background: rgba(220, 20, 60, 0.5);
+}
+
+.editButton {
+  background: rgba(220, 20, 60, 0.3);
+  color: #DC143C;
+  border: 1px solid rgba(220, 20, 60, 0.5);
+}
+
+.editButton:hover {
+  background: rgba(220, 20, 60, 0.5);
+}
+
+.deleteButton {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.5);
+}
+
+.doctorsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.doctorCard {
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.2), rgba(17, 24, 39, 0.95));
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.doctorImage {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 16px;
+  border: 3px solid rgba(148, 163, 184, 0.3);
+}
+
+.doctorInfo h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.specialty {
+  color: #DC143C;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.hospital,
+.rating {
+  font-size: 14px;
+  color: #cbd5e0;
+  margin-bottom: 4px;
+}
+
+.doctorActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.monitoringGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.monitorCard {
+  background: linear-gradient(150deg, rgba(220, 20, 60, 0.2), rgba(17, 24, 39, 0.95));
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  text-align: center;
+}
+
+.monitorCard h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #cbd5e0;
+  margin-bottom: 12px;
+}
+
+.monitorValue {
+  font-size: 36px;
+  font-weight: 800;
+  color: #DC143C;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px;
+  }
+
+  .table {
+    font-size: 12px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px;
+  }
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
