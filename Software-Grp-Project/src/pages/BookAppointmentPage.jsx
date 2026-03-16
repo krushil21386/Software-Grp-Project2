@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './BookAppointmentPage.module.css';
 import { doctors, hospitals, departments, appointments as initialAppointments } from '../utils/mockData';
 
 const BookAppointmentPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { authFetch, user } = useAuth();
   const doctorId = searchParams.get('doctorId');
   const hospitalId = searchParams.get('hospitalId');
 
@@ -111,11 +113,53 @@ const BookAppointmentPage = () => {
     }
   }, [selectedDoctor, date]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send the appointment request to the backend
-    alert('Appointment booked successfully!');
-    navigate('/patient-dashboard');
+    
+    if (!user) {
+      alert('Please login to book an appointment.');
+      navigate('/login');
+      return;
+    }
+
+    const payload = {
+      doctorName: selectedDoctor.name,
+      specialization: selectedDoctor.specialty,
+      clinicName: selectedHospital ? selectedHospital.name : 'Virtual Clinic',
+      clinicAddress: selectedHospital ? selectedHospital.address : 'Online Consultation',
+      // Dummy contact since mock doctor data doesn't have phone numbers
+      doctorContact: '+91-9876543210', 
+      
+      // Send user data directly or use dummy fallbacks if profile is incomplete
+      patientName: user.name,
+      patientEmail: user.email,
+      patientPhone: user.phone || '+91-0000000000',
+      patientAddress: user.address || 'Address provided at clinic',
+      
+      date: date,
+      time: time,
+      mode: selectedHospital ? 'Offline' : 'Online'
+    };
+
+    try {
+      const response = await authFetch('http://localhost:5000/api/appointments/book-appointment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('Appointment booked successfully! A confirmation email has been sent.');
+        navigate('/patient-dashboard');
+      } else {
+        alert(data.message || 'Failed to book appointment.');
+      }
+    } catch (err) {
+      console.error('Booking error:', err);
+      alert('An error occurred. Please try again.');
+    }
   };
 
   const handleHospitalChange = (e) => {

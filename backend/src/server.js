@@ -18,8 +18,10 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-// Sync Database (alter: true updates columns without dropping data)
-sequelize.sync({ alter: true })
+// Sync Database
+// NOTE: SQLite + `alter: true` can attempt table rebuilds that fail with FK constraints.
+// We keep sync safe/stable here so auth/OTP endpoints work reliably.
+sequelize.sync()
     .then(() => {
         console.log('✅ Database synced (all tables up to date)');
         app.listen(PORT, () => {

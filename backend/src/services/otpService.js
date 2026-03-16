@@ -16,7 +16,8 @@ function generateOtp() {
  * Detect whether real Gmail credentials are configured.
  */
 function hasRealCredentials() {
-    const email = process.env.EMAIL || '';
+    // Keep env var names consistent with the rest of the backend (appointment emails)
+    const email = process.env.EMAIL_USER || '';
     const pass  = process.env.EMAIL_PASS || '';
     return (
         email.includes('@') &&
@@ -39,7 +40,7 @@ async function createTransporter() {
         return nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: process.env.EMAIL,
+                user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS   // Must be a Gmail App Password
             }
         });
@@ -176,7 +177,7 @@ const otpService = {
                 : 'HealthCare — Email Verification OTP';
 
             const info = await transporter.sendMail({
-                from:    `"HealthCare Platform" <${process.env.EMAIL || 'noreply@healthcare.dev'}>`,
+                from:    `"HealthCare Platform" <${process.env.EMAIL_USER || 'noreply@healthcare.dev'}>`,
                 to:      email,
                 subject,
                 html:    buildEmailHtml(otp, type, expiryMins)

@@ -46,6 +46,8 @@ const hospitalRoutes    = require('./routes/hospitalRoutes');
 const doctorRoutes      = require('./routes/doctorRoutes');
 const departmentRoutes  = require('./routes/departmentRoutes');
 const medicineRoutes    = require('./routes/medicineRoutes');
+const authenticate      = require('./middleware/authenticate');
+const appointmentController = require('./controllers/appointmentController');
 
 app.use('/api/auth',               authRoutes);
 app.use('/api/ai',                 aiRoutes);
@@ -54,6 +56,10 @@ app.use('/api/hospitals',          hospitalRoutes);
 app.use('/api/doctors',            doctorRoutes);
 app.use('/api/departments',        departmentRoutes);
 app.use('/api/medicine-suggestion',medicineRoutes);
+
+// Aliases for assignment-style endpoints (same logic, same auth)
+app.post('/book-appointment', authenticate, appointmentController.bookAppointment);
+app.get('/my-appointments', authenticate, appointmentController.getMyAppointments);
 
 // 404 handler
 app.use((req, res) => {
