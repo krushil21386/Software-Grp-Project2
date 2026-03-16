@@ -3,15 +3,15 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   build: {
-  rollupOptions: {
-    output: {
-      manualChunks: {
-        vendor: ['react', 'react-dom']
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom']
+        }
       }
     }
-  }
-},
+  },
 
-  base: '/Software-Grp-Project2/',
+  base: '/Software-Grp-Project/',
   plugins: [react()],
 })

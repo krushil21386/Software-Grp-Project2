@@ -122,7 +122,7 @@ const MedicineDelivery = () => {
               <div key={index} className={styles.medicineCard}>
                 <div className={styles.medicineHeader}>
                   <h3>{medicine.name}</h3>
-                  <span className={styles.price}>${getMedicinePrice(medicine)}</span>
+                  <span className={styles.price}>Rs.{getMedicinePrice(medicine)}</span>
                 </div>
                 <div className={styles.medicineDetails}>
                   <p><strong>Dosage:</strong> {medicine.dosage}</p>

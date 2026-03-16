@@ -22,7 +22,7 @@ const Hero = () => {
         <div className={styles.rightContent}>
           <div className={styles.imageContainer}>
             <img 
-              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&auto=format&fit=crop&q=80" 
+              src="https://images.unsplash.com/photo-1659353888906-adb3e0041693?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
               alt="Medical professional with tablet"
               className={styles.heroImage}
             />
@@ -34,7 +34,7 @@ const Hero = () => {
                 </svg>
               </div>
               <div className={styles.cardContent}>
-                <div className={styles.doctorName}>Dr. Sarah Johnson</div>
+                <div className={styles.doctorName}>Dr. Monika Panchal</div>
                 <div className={styles.availability}>Available for Telehealth now</div>
               </div>
               <div className={styles.statusDot}></div>

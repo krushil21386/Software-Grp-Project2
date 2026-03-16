@@ -220,7 +220,7 @@ const BookAppointmentPage = () => {
                         <h3>{doctor.name}</h3>
                         <p>{doctor.specialty}</p>
                         <p className={styles.rating}>⭐ {doctor.rating} ({doctor.reviews} reviews)</p>
-                        <p className={styles.fee}>${doctor.consultationFee}</p>
+                        <p className={styles.fee}>Rs. {doctor.consultationFee}</p>
                       </div>
                     </div>
                   ))}
@@ -340,7 +340,7 @@ const BookAppointmentPage = () => {
 
               <div className={styles.feeSection}>
                 <span className={styles.feeLabel}>Consultation Fee</span>
-                <span className={styles.feeAmount}>${selectedDoctor.consultationFee}</span>
+                <span className={styles.feeAmount}>Rs.{selectedDoctor.consultationFee}</span>
               </div>
 
               {selectedHospital && (

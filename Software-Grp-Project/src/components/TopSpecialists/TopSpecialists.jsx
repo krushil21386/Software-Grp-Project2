@@ -4,19 +4,19 @@ import styles from './TopSpecialists.module.css';
 const TopSpecialists = () => {
   const specialists = [
     {
-      name: 'Dr. Emily Chen',
+      name: 'Dr. Manoj Bhatt',
       specialty: 'Neurologist',
       specialtyColor: 'var(--color-crimson)',
       description: 'Expert in neurological disorders with over 15 years of experience in treating complex brain conditions.'
     },
     {
-      name: 'Dr. James Wilson',
+      name: 'Dr. Jayesh Patel',
       specialty: 'Cardiologist',
       specialtyColor: 'var(--color-crimson)',
       description: 'Leading heart specialist focused on preventive cardiology and advanced cardiac interventions.'
     },
     {
-      name: 'Dr. Sarah Thompson',
+      name: 'Dr. Anjali Mehta',
       specialty: 'Pediatrician',
       specialtyColor: 'var(--color-crimson)',
       description: 'Dedicated to children\'s health with a compassionate approach to pediatric care and development.'

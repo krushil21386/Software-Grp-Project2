@@ -103,8 +103,8 @@ const Navbar = () => {
           <Link to="/doctor-locator" onClick={() => handleLinkClick('/doctor-locator')}>Find Doctors</Link>
           <Link to="/medicine-ai" onClick={() => handleLinkClick('/medicine-ai')}>AI Medicine Suggestion</Link>
           <Link to="/book-appointment" onClick={() => handleLinkClick('/book-appointment')}>Book Appointment</Link>
-          <Link to="/emergency-services" onClick={() => handleLinkClick('/emergency-services')}>🚨 Emergency Services</Link>
-          <Link to="/medicine-delivery" onClick={() => handleLinkClick('/medicine-delivery')}>💊 Medicine Delivery</Link>
+          <Link to="/emergency-services" onClick={() => handleLinkClick('/emergency-services')}>Emergency Services</Link>
+          <Link to="/medicine-delivery" onClick={() => handleLinkClick('/medicine-delivery')}>Medicine Delivery</Link>
           {isAuthenticated && (
             <>
               {user?.role === 'patient' && (
