@@ -1,10 +1,10 @@
 require('dotenv').config();
 const app = require('./app');
-const sequelize = require('./config/db');
+const connectDB = require('./config/db');
 const fs = require('fs');
 const path = require('path');
 
-// Pre-load all models so Sequelize syncs all tables
+// Pre-load all models
 require('./models/User');
 require('./models/OtpToken');
 require('./models/Session');
@@ -18,24 +18,25 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-// Sync Database
-// NOTE: SQLite + `alter: true` can attempt table rebuilds that fail with FK constraints.
-// We keep sync safe/stable here so auth/OTP endpoints work reliably.
-sequelize.sync()
-    .then(() => {
-        console.log('✅ Database synced (all tables up to date)');
-        app.listen(PORT, () => {
-            console.log(`✅ Backend server running on port ${PORT}`);
-            console.log(`   Health:          http://localhost:${PORT}/health`);
-            console.log(`   Auth Register:   POST http://localhost:${PORT}/api/auth/register`);
-            console.log(`   Auth Login:      POST http://localhost:${PORT}/api/auth/login`);
-            console.log(`   Verify OTP:      POST http://localhost:${PORT}/api/auth/verify-otp`);
-            console.log(`   AI Analysis:     POST http://localhost:${PORT}/api/ai/analyze`);
-        });
-    })
-    .catch(err => {
-        console.error('❌ Failed to sync database:', err);
-        app.listen(PORT, () => {
-            console.log(`⚠️  Backend running on port ${PORT} (DB sync failed)`);
-        });
+const { initCronJobs } = require('./services/cronService');
+
+// Connect to MongoDB and Start Server
+connectDB().then(() => {
+    const server = app.listen(PORT, () => {
+        console.log(`✅ Backend server running on port ${PORT}`);
+        
+        // Initialize Socket.io
+        const socketIO = require('./socket');
+        socketIO.init(server);
+        console.log(`📡 Socket.io initialized`);
+        
+        // Start background email reminders
+        initCronJobs();
+
+        console.log(`   Health:          http://localhost:${PORT}/health`);
+        console.log(`   Auth Register:   POST http://localhost:${PORT}/api/auth/register`);
+        console.log(`   Auth Login:      POST http://localhost:${PORT}/api/auth/login`);
+        console.log(`   Verify OTP:      POST http://localhost:${PORT}/api/auth/verify-otp`);
+        console.log(`   AI Analysis:     POST http://localhost:${PORT}/api/ai/analyze`);
     });
+});

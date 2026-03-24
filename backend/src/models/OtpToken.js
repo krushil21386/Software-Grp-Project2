@@ -1,36 +1,13 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+const mongoose = require('mongoose');
 
-const OtpToken = sequelize.define('OtpToken', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    email: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    otp: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    // 'registration' | 'password-reset' | 'login'
-    type: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        defaultValue: 'registration'
-    },
-    expiresAt: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
-    used: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-    }
+const otpTokenSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    otp: { type: String, required: true },
+    type: { type: String, required: true, default: 'registration' },
+    expiresAt: { type: Date, required: true },
+    used: { type: Boolean, default: false }
 }, {
     timestamps: true
 });
 
-module.exports = OtpToken;
+module.exports = mongoose.model('OtpToken', otpTokenSchema);

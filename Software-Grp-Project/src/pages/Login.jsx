@@ -6,7 +6,7 @@ import styles from './Login.module.css';
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
 
   const [role, setRole]         = useState('patient');
   const [email, setEmail]       = useState('');
@@ -18,12 +18,13 @@ const Login = () => {
   const isPatient = role === 'patient';
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       const from = location.state?.from?.pathname ||
-        (role === 'doctor' ? '/doctor-dashboard' : '/patient-dashboard');
+        (user.role === 'doctor' ? '/doctor-dashboard' : 
+         user.role === 'admin' ? '/admin-dashboard' : '/patient-dashboard');
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate, location, role]);
+  }, [isAuthenticated, user, navigate, location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,6 +37,19 @@ const Login = () => {
       // If backend needs OTP verification
       if (data.requiresVerification) {
         navigate('/verify-otp', { state: { email, type: 'registration' } });
+        return;
+      }
+
+      // If backend needs MFA
+      if (data.requiresMfa) {
+        navigate('/verify-otp', { 
+          state: { 
+            email, 
+            type: 'login-mfa', 
+            location: data.location,
+            from: location.state?.from
+          } 
+        });
         return;
       }
 

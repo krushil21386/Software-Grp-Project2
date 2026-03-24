@@ -1,65 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Appointments.module.css';
-import { appointments as initialAppointments, doctors, hospitals } from '../utils/mockData';
+import { useAuth } from '../contexts/AuthContext';
 
 const Appointments = () => {
+  const { authFetch } = useAuth();
   const [filter, setFilter] = useState('all');
-  const [appointments, setAppointments] = useState(initialAppointments);
-  const allAppointments = appointments;
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const res = await authFetch('http://localhost:5000/api/appointments/my-appointments');
+        const data = await res.json();
+        if (data.success) {
+          const allApts = [
+            ...(data.upcoming || []),
+            ...(data.completed || []),
+            ...(data.cancelled || [])
+          ];
+          setAppointments(allApts);
+        }
+      } catch (err) {
+        console.error('Failed to fetch appointments:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAppointments();
+  }, [authFetch]);
 
   const filteredAppointments = filter === 'all'
-    ? allAppointments
-    : allAppointments.filter(apt => apt.status === filter);
-
-  const getAppointmentDoctor = (doctorId) => {
-    return doctors.find(d => d.id === doctorId);
-  };
-
-  const getAppointmentHospital = (hospitalId) => {
-    return hospitals.find(h => h.id === hospitalId);
-  };
+    ? appointments
+    : appointments.filter(apt => apt.status === filter);
 
   const handleCancelAppointment = async (appointmentId) => {
     if (window.confirm('Are you sure you want to cancel this appointment?')) {
       try {
-        // Try to call backend API
-        const response = await fetch(`http://localhost:3000/api/appointments/${appointmentId}`, {
-          method: 'DELETE',
+        const response = await authFetch(`http://localhost:5000/api/appointments/${appointmentId}/reject`, {
+          method: 'PUT',
         });
-
         if (response.ok) {
-          // Update local state
-          setAppointments(prevAppointments =>
-            prevAppointments.map(apt =>
-              apt.id === appointmentId
-                ? { ...apt, status: 'cancelled' }
-                : apt
-            )
-          );
-        } else {
-          // If API fails, update local state anyway (for demo purposes)
-          setAppointments(prevAppointments =>
-            prevAppointments.map(apt =>
-              apt.id === appointmentId
-                ? { ...apt, status: 'cancelled' }
-                : apt
-            )
-          );
+          setAppointments(prev => prev.map(apt => 
+            apt._id === appointmentId ? { ...apt, status: 'cancelled' } : apt
+          ));
         }
       } catch (error) {
         console.error('Error canceling appointment:', error);
-        // Update local state even if API call fails (for demo purposes)
-        setAppointments(prevAppointments =>
-          prevAppointments.map(apt =>
-            apt.id === appointmentId
-              ? { ...apt, status: 'cancelled' }
-              : apt
-          )
-        );
       }
     }
   };
+
+  if (loading) {
+    return <div className={styles.container} style={{textAlign:'center', padding:'50px'}}>Loading appointments...</div>;
+  }
 
   return (
     <div className={styles.container}>
@@ -93,71 +88,48 @@ const Appointments = () => {
 
       <div className={styles.appointmentsList}>
         {filteredAppointments.length > 0 ? (
-          filteredAppointments.map(appointment => {
-            const doctor = getAppointmentDoctor(appointment.doctorId);
-            const hospital = getAppointmentHospital(appointment.hospitalId);
-            
-            return (
-              <div key={appointment.id} className={styles.appointmentCard}>
-                <div className={styles.appointmentHeader}>
-                  <div className={styles.dateTime}>
-                    <span className={styles.date}>{appointment.date}</span>
-                    <span className={styles.time}>{appointment.time}</span>
-                  </div>
-                  <span className={`${styles.status} ${styles[appointment.status]}`}>
-                    {appointment.status}
-                  </span>
+          filteredAppointments.map(appointment => (
+            <div key={appointment._id || appointment.appointmentId} className={styles.appointmentCard}>
+              <div className={styles.appointmentHeader}>
+                <div className={styles.dateTime}>
+                  <span className={styles.date}>{appointment.date}</span>
+                  <span className={styles.time}>{appointment.time}</span>
                 </div>
+                <span className={`${styles.status} ${styles[appointment.status]}`}>
+                  {appointment.status}
+                </span>
+              </div>
 
-                <div className={styles.appointmentBody}>
-                  <div className={styles.doctorInfo}>
-                    {doctor && (
-                      <>
-                        <img src={doctor.image} alt={doctor.name} className={styles.doctorImage} />
-                        <div>
-                          <h3 className={styles.doctorName}>{doctor.name}</h3>
-                          <p className={styles.specialty}>{doctor.specialty}</p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <div className={styles.appointmentDetails}>
-                    <p><strong>Hospital:</strong> {hospital?.name}</p>
-                    <p><strong>Reason:</strong> {appointment.reason}</p>
-                    <p><strong>Patient:</strong> {appointment.patientName}</p>
-                  </div>
-                </div>
-
-                <div className={styles.appointmentActions}>
-                  {doctor && (
-                    <Link
-                      to={`/doctor/${doctor.id}`}
-                      className={styles.viewButton}
-                    >
-                      View Doctor Profile
-                    </Link>
-                  )}
-                  {appointment.status === 'completed' && (
-                    <Link
-                      to="/medical-records"
-                      className={styles.recordsButton}
-                    >
-                      View Medical Records
-                    </Link>
-                  )}
-                  {appointment.status === 'upcoming' && (
-                    <button 
-                      className={styles.cancelButton}
-                      onClick={() => handleCancelAppointment(appointment.id)}
-                    >
-                      Cancel Appointment
-                    </button>
-                  )}
+              <div className={styles.appointmentBody}>
+                <div className={styles.appointmentDetails}>
+                  <h3 className={styles.doctorName}>{appointment.doctorName}</h3>
+                  <p className={styles.specialty}>{appointment.specialization}</p>
+                  <p><strong>Hospital:</strong> {appointment.clinicName}</p>
+                  <p><strong>Address:</strong> {appointment.clinicAddress}</p>
+                  <p><strong>Mode:</strong> {appointment.mode}</p>
                 </div>
               </div>
-            );
-          })
+
+              <div className={styles.appointmentActions}>
+                {appointment.status === 'completed' && (
+                  <Link
+                    to="/medical-records"
+                    className={styles.recordsButton}
+                  >
+                    View Medical Records
+                  </Link>
+                )}
+                {appointment.status === 'upcoming' && (
+                  <button 
+                    className={styles.cancelButton}
+                    onClick={() => handleCancelAppointment(appointment._id)}
+                  >
+                    Cancel Appointment
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
         ) : (
           <div className={styles.emptyState}>
             <p>No appointments found</p>

@@ -1,92 +1,27 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+const mongoose = require('mongoose');
 
-/**
- * Appointment model — stores all booking details tied to a specific user.
- * appointmentId is a UUID generated at creation time.
- */
-const Appointment = sequelize.define('Appointment', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-
-    // Link to the logged-in user who made the booking
-    userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'Users', key: 'id' }
-    },
-
-    // Human-readable unique booking reference (UUID) — uniqueness guaranteed by uuidv4()
-    appointmentId: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true
-    },
-
-    // --- Doctor Details ---
-    doctorName: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    specialization: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    clinicName: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    clinicAddress: {
-        type: DataTypes.TEXT,
-        allowNull: false
-    },
-    doctorContact: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-
-    // --- Patient Details ---
-    patientName: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    patientEmail: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    patientPhone: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    patientAddress: {
-        type: DataTypes.TEXT,
-        allowNull: false
-    },
-
-    // --- Appointment Details ---
-    date: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    time: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    mode: {
-        type: DataTypes.ENUM('Online', 'Offline'),
-        allowNull: false,
-        defaultValue: 'Offline'
-    },
-    status: {
-        type: DataTypes.ENUM('upcoming', 'completed', 'cancelled'),
-        allowNull: false,
-        defaultValue: 'upcoming'
-    }
+const appointmentSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    appointmentId: { type: String, required: true, unique: true },
+    doctorName: { type: String, required: true },
+    specialization: { type: String, required: true },
+    clinicName: { type: String, required: true },
+    clinicAddress: { type: String, required: true },
+    doctorContact: { type: String, required: true },
+    patientName: { type: String, required: true },
+    patientEmail: { type: String, required: true },
+    patientPhone: { type: String, required: true },
+    patientAddress: { type: String, required: true },
+    date: { type: String, required: true },
+    time: { type: String, required: true },
+    mode: { type: String, enum: ['Online', 'Offline'], required: true, default: 'Offline' },
+    status: { type: String, enum: ['upcoming', 'completed', 'cancelled'], required: true, default: 'upcoming' },
+    isUrgent: { type: Boolean, default: false },
+    reminder24hSent: { type: Boolean, default: false },
+    reminder2hSent: { type: Boolean, default: false }
 }, {
     timestamps: true
 });
 
-module.exports = Appointment;
+module.exports = mongoose.model('Appointment', appointmentSchema);

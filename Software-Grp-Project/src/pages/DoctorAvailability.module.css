@@ -1,11 +1,11 @@
 .container {
   min-height: calc(100vh - 80px);
   padding: 40px 80px 32px 80px;
-  color: #ffffff;
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
   animation: pageFadeIn 0.9s ease-out both;
-  background: radial-gradient(circle at 90% 20%, var(--color-crimson-dark) 0, var(--color-bg-charcoal) 35%, #020617 100%);
+  background-color: var(--color-white);
   max-width: 1600px;
   margin: 0 auto;
 }
@@ -24,7 +24,7 @@
 
 .subtitle {
   font-size: 18px;
-  color: #cbd5e0;
+  color: var(--color-text-muted);
   max-width: 600px;
   margin: 0 auto;
 }
@@ -35,17 +35,17 @@
   align-items: center;
   margin-bottom: 32px;
   padding: 20px;
-  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
-  backdrop-filter: blur(16px);
+  background: var(--color-white);
+  box-shadow: 0 4px 12px var(--color-shadow);
   border-radius: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border: 1px solid var(--color-border);
 }
 
 .navButton {
   padding: 10px 20px;
-  background: rgba(15, 23, 42, 0.8);
-  color: #ffffff;
-  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: var(--color-crimson);
+  color: var(--color-white);
+  border: none;
   border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
@@ -53,8 +53,8 @@
 }
 
 .navButton:hover {
-  background: rgba(15, 23, 42, 0.9);
-  border-color: rgba(148, 163, 184, 0.7);
+  background: var(--color-crimson-dark);
+  transform: translateY(-1px);
 }
 
 .weekInfo {
@@ -88,13 +88,14 @@
 
 .dayHeader h3 {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
+  color: var(--color-charcoal);
 }
 
 .date {
   font-size: 12px;
-  color: #a0aec0;
+  color: var(--color-text-muted);
 }
 
 .heatmapCell {
@@ -122,7 +123,7 @@
   display: block;
   font-size: 12px;
   margin-bottom: 4px;
-  color: #ffffff;
+  color: var(--color-text-muted);
 }
 
 .bookedCount {
@@ -130,19 +131,20 @@
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 4px;
-  color: #ffffff;
+  color: var(--color-charcoal);
 }
 
 .percentage {
   display: block;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-crimson-soft);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-crimson);
 }
 
 .unavailable {
-  color: #718096;
-  font-size: 12px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .availabilitySettings {
@@ -163,11 +165,11 @@
 }
 
 .settingCard {
-  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
-  backdrop-filter: blur(16px);
+  background: var(--color-white);
+  box-shadow: 0 4px 12px var(--color-shadow);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border: 1px solid var(--color-border);
 }
 
 .settingHeader {
@@ -179,8 +181,9 @@
 
 .dayName {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
+  color: var(--color-charcoal);
 }
 
 .toggle {
@@ -242,15 +245,15 @@
 
 .timeGroup label {
   font-size: 12px;
-  color: #a0aec0;
+  color: var(--color-text-muted);
 }
 
 .timeGroup input {
   padding: 8px;
   border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  background-color: rgba(15, 23, 42, 0.8);
-  color: #e2e8f0;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-white);
+  color: var(--color-text-primary);
   font-size: 14px;
 }
 

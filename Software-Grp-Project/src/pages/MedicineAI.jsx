@@ -86,6 +86,7 @@ const MedicineAI = () => {
           const reportAnalysis = await analyzeMedicalReport(file);
           if (reportAnalysis.success) {
           const data = reportAnalysis.data;
+          const from = reportAnalysis.from; // Get source (gemini or logic)
           
           // Get identified diseases from OCR analysis
           const identifiedDiseases = data.diseases || [];
@@ -119,6 +120,7 @@ const MedicineAI = () => {
             severityWarnings: data.diagnosisReport?.findings?.filter(f => f.status !== 'Normal').map(f => f.message) || [],
             disclaimer: 'These suggestions are based on OCR analysis of your medical report. Always consult a healthcare professional before taking any medication.',
             fromReport: true, // Flag for canvas effect
+            from: from, // Pass along the source
             extractedDisease: disease,
             identifiedDiseases: identifiedDiseases,
             extractedText: data.rawText,
@@ -201,7 +203,7 @@ const MedicineAI = () => {
             className={styles.input}
           />
           <small style={{ color: '#cbd5e0', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-            Upload a clear image of your medical report. DeepSeek-OCR-2 will extract text, identify diseases, and suggest medicines automatically.
+            Upload a clear image of your medical report. Gemini 1.5 Flash will extract text, identify diseases, and suggest medicines automatically.
           </small>
 
           {imagePreview && (
@@ -287,7 +289,7 @@ const MedicineAI = () => {
           
           {results.fromReport && (
             <div className={styles.warningBox} style={{ backgroundColor: 'rgba(220, 20, 60, 0.2)', color: '#ffffff', borderColor: '#DC143C', border: '2px solid rgba(220, 20, 60, 0.5)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-              <h3 style={{ color: '#DC143C', marginBottom: '16px', fontSize: '24px' }}>📋 DeepSeek-OCR-2 Report Analysis</h3>
+              <h3 style={{ color: '#DC143C', marginBottom: '16px', fontSize: '24px' }}>📋 {results.from === 'gemini' ? 'Gemini 1.5 Pro' : 'DeepSeek-OCR-2'} Analysis</h3>
               
               {results.identifiedDiseases && results.identifiedDiseases.length > 0 && (
                 <div style={{ marginBottom: '16px' }}>
@@ -343,7 +345,7 @@ const MedicineAI = () => {
               padding: '24px',
               border: '1px solid rgba(148, 163, 184, 0.25)'
             }}>
-              <h3 style={{ marginBottom: '16px', color: '#DC143C', fontSize: '20px' }}>🔬 Lab Results (Extracted by DeepSeek-OCR-2)</h3>
+              <h3 style={{ marginBottom: '16px', color: '#DC143C', fontSize: '20px' }}>🔬 Lab Results ({results.from === 'gemini' ? 'Gemini Extracted' : 'DeepSeek Extracted'})</h3>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                 <thead>
                   <tr style={{ background: 'rgba(15, 23, 42, 0.6)', textAlign: 'left' }}>

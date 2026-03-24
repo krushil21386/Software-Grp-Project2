@@ -29,5 +29,6 @@ router.delete('/:id',         appointmentController.delete);
 router.put('/:id/accept',     appointmentController.updateStatus);
 router.put('/:id/reject',     appointmentController.updateStatus);
 router.put('/:id/complete',   appointmentController.updateStatus);
+router.put('/:id/reschedule', appointmentController.reschedule);
 
 module.exports = router;

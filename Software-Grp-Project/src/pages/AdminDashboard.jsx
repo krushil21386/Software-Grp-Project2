@@ -13,6 +13,9 @@ const AdminDashboard = () => {
     { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'patient', status: 'active', createdAt: '2024-02-20' },
     { id: 3, name: 'Dr. Sarah Johnson', email: 'sarah@hospital.com', role: 'doctor', status: 'active', createdAt: '2024-01-10' },
   ]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const { authFetch } = useAuth();
 
   // Statistics
   const totalUsers = users.length;
@@ -42,6 +45,44 @@ const AdminDashboard = () => {
       )
     );
   };
+
+  const fetchAuditLogs = async () => {
+    setLogsLoading(true);
+    try {
+      const res = await authFetch('http://localhost:5000/api/audit/logs?limit=20');
+      const data = await res.json();
+      if (data.success) {
+        setAuditLogs(data.logs);
+      }
+    } catch (err) {
+      console.error('Failed to fetch audit logs:', err);
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
+  const handleDownloadLogs = async () => {
+    try {
+      const response = await authFetch('http://localhost:5000/api/audit/export');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download error:', err);
+      alert('Failed to download logs');
+    }
+  };
+
+  React.useEffect(() => {
+    if (selectedTab === 'audit') {
+      fetchAuditLogs();
+    }
+  }, [selectedTab]);
 
   return (
     <div className={styles.container}>
@@ -105,6 +146,12 @@ const AdminDashboard = () => {
           onClick={() => setSelectedTab('appointments')}
         >
           System Monitoring
+        </button>
+        <button
+          className={`${styles.tab} ${selectedTab === 'audit' ? styles.active : ''}`}
+          onClick={() => setSelectedTab('audit')}
+        >
+          Audit Logs
         </button>
       </div>
 
@@ -259,6 +306,62 @@ const AdminDashboard = () => {
                 <h3>System Uptime</h3>
                 <p className={styles.monitorValue}>99.9%</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === 'audit' && (
+          <div className={styles.auditSection}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 className={styles.sectionTitle} style={{ margin: 0 }}>System Audit Logs</h2>
+              <button 
+                className={styles.toggleButton} 
+                onClick={handleDownloadLogs}
+                style={{ background: 'var(--color-crimson)', color: 'var(--color-text-white)', padding: '10px 20px', borderRadius: '8px' }}
+              >
+                📥 Download Full CSV
+              </button>
+            </div>
+
+            <div className={styles.tableContainer}>
+              {logsLoading ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#cbd5e0' }}>Loading logs...</div>
+              ) : (
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>User</th>
+                      <th>Action</th>
+                      <th>Status</th>
+                      <th>Location</th>
+                      <th>IP Address</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogs.length > 0 ? (
+                      auditLogs.map(log => (
+                        <tr key={log._id}>
+                          <td>{new Date(log.timestamp).toLocaleString()}</td>
+                          <td>{log.userId?.name || 'Anonymous'}</td>
+                          <td>{log.action}</td>
+                          <td>
+                            <span className={`${styles.statusBadge} ${styles[log.status.toLowerCase()] || ''}`}>
+                              {log.status}
+                            </span>
+                          </td>
+                          <td>{log.location || 'Unknown'}</td>
+                          <td>{log.ipAddress}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>No audit logs found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         )}

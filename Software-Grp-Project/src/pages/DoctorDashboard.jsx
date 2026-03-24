@@ -1,25 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './DoctorDashboard.module.css';
-import { appointments as initialAppointments, doctors, hospitals } from '../utils/mockData';
+import { useAuth } from '../contexts/AuthContext';
+import ProfileImageUpload from '../components/ProfileImageUpload/ProfileImageUpload';
+import DoctorPerformanceChart from '../components/DoctorPerformanceChart/DoctorPerformanceChart';
 
 const DoctorDashboard = () => {
-  // Simulate logged-in doctor
-  const currentDoctorId = 1;
-  const currentDoctor = doctors.find(d => d.id === currentDoctorId);
-  const [appointments, setAppointments] = useState(initialAppointments);
-  const doctorAppointments = appointments.filter(a => a.doctorId === currentDoctorId);
+  const { authFetch, user } = useAuth();
+  const [selectedTab, setSelectedTab] = useState('upcoming');
   
-  const [selectedTab, setSelectedTab] = useState('today');
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [completedAppointments, setCompletedAppointments] = useState([]);
+  const [cancelledAppointments, setCancelledAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [rescheduleModal, setRescheduleModal] = useState({ show: false, appointmentId: null, date: '', time: '', reason: '' });
 
-  const todayAppointments = doctorAppointments.filter(apt => {
-    const today = new Date().toISOString().split('T')[0];
-    return apt.date === today && apt.status === 'upcoming';
-  });
-
-  const upcomingAppointments = doctorAppointments.filter(apt => apt.status === 'upcoming' || apt.status === 'pending');
-  const pendingAppointments = doctorAppointments.filter(apt => apt.status === 'pending');
-  const completedAppointments = doctorAppointments.filter(apt => apt.status === 'completed');
+  // Default settings that aren't stored in DB yet, keeping UI interactive
   const [availabilitySettings, setAvailabilitySettings] = useState({
     monday: { start: '9:00 AM', end: '5:00 PM', available: true },
     tuesday: { start: '9:00 AM', end: '5:00 PM', available: true },
@@ -30,176 +26,116 @@ const DoctorDashboard = () => {
     sunday: { start: '10:00 AM', end: '2:00 PM', available: false },
   });
 
-  const getAppointmentHospital = (hospitalId) => {
-    return hospitals.find(h => h.id === hospitalId);
-  };
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const res = await authFetch('http://localhost:5000/api/appointments/my-appointments');
+        const data = await res.json();
+        if (data.success) {
+          setUpcomingAppointments(data.upcoming || []);
+          setCompletedAppointments(data.completed || []);
+          setCancelledAppointments(data.cancelled || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch appointments:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    // Initial fetch
+    fetchAppointments();
+
+    // Poll every 10 seconds for live updates
+    const intervalId = setInterval(fetchAppointments, 10000);
+
+    return () => clearInterval(intervalId);
+  }, [authFetch]);
 
   const handleCancelAppointment = async (appointmentId) => {
-    if (window.confirm('Are you sure you want to cancel this appointment?')) {
+    const reason = window.prompt('Please provide a reason for cancellation (this will be emailed to the patient):');
+    if (reason !== null) {
       try {
-        // Try to call backend API
-        const response = await fetch(`http://localhost:3000/api/appointments/${appointmentId}`, {
-          method: 'DELETE',
+        const response = await authFetch(`http://localhost:5000/api/appointments/${appointmentId}/reject`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: reason || 'Not provided' })
         });
-
         if (response.ok) {
-          // Update local state
-          setAppointments(prevAppointments =>
-            prevAppointments.map(apt =>
-              apt.id === appointmentId
-                ? { ...apt, status: 'cancelled' }
-                : apt
-            )
-          );
-        } else {
-          // If API fails, update local state anyway (for demo purposes)
-          setAppointments(prevAppointments =>
-            prevAppointments.map(apt =>
-              apt.id === appointmentId
-                ? { ...apt, status: 'cancelled' }
-                : apt
-            )
-          );
+          const rejectedApt = upcomingAppointments.find(a => a._id === appointmentId);
+          if (rejectedApt) {
+            rejectedApt.status = 'cancelled';
+            setCancelledAppointments(prev => [rejectedApt, ...prev]);
+          }
+          setUpcomingAppointments(prev => prev.filter(apt => apt._id !== appointmentId));
+          alert('Appointment canceled and email sent.');
         }
       } catch (error) {
         console.error('Error canceling appointment:', error);
-        // Update local state even if API call fails (for demo purposes)
-        setAppointments(prevAppointments =>
-          prevAppointments.map(apt =>
-            apt.id === appointmentId
-              ? { ...apt, status: 'cancelled' }
-              : apt
-          )
-        );
       }
     }
   };
 
-  const handleAcceptAppointment = async (appointmentId) => {
+  const submitReschedule = async () => {
+    if (!rescheduleModal.date || !rescheduleModal.time) {
+        alert('Please select a new date and time.');
+        return;
+    }
+    
     try {
-      const response = await fetch(`http://localhost:3000/api/appointments/${appointmentId}/accept`, {
-        method: 'PUT',
-      });
-
-      if (response.ok) {
-        setAppointments(prevAppointments =>
-          prevAppointments.map(apt =>
-            apt.id === appointmentId
-              ? { ...apt, status: 'upcoming' }
-              : apt
-          )
-        );
-      } else {
-        // Update local state anyway (for demo purposes)
-        setAppointments(prevAppointments =>
-          prevAppointments.map(apt =>
-            apt.id === appointmentId
-              ? { ...apt, status: 'upcoming' }
-              : apt
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Error accepting appointment:', error);
-      // Update local state even if API call fails (for demo purposes)
-      setAppointments(prevAppointments =>
-        prevAppointments.map(apt =>
-          apt.id === appointmentId
-            ? { ...apt, status: 'upcoming' }
-            : apt
-        )
-      );
-    }
-  };
-
-  const handleRejectAppointment = async (appointmentId) => {
-    if (window.confirm('Are you sure you want to reject this appointment?')) {
-      try {
-        const response = await fetch(`http://localhost:3000/api/appointments/${appointmentId}/reject`, {
-          method: 'PUT',
+        const response = await authFetch(`http://localhost:5000/api/appointments/${rescheduleModal.appointmentId}/reschedule`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                date: rescheduleModal.date,
+                time: rescheduleModal.time,
+                reason: rescheduleModal.reason || 'Not provided'
+            })
         });
 
         if (response.ok) {
-          setAppointments(prevAppointments =>
-            prevAppointments.map(apt =>
-              apt.id === appointmentId
-                ? { ...apt, status: 'cancelled' }
-                : apt
-            )
-          );
-        } else {
-          // Update local state anyway (for demo purposes)
-          setAppointments(prevAppointments =>
-            prevAppointments.map(apt =>
-              apt.id === appointmentId
-                ? { ...apt, status: 'cancelled' }
-                : apt
-            )
-          );
+            alert('Appointment rescheduled and patient notified!');
+            setRescheduleModal({ show: false, appointmentId: null, date: '', time: '', reason: '' });
+            // Refresh logic - simplest is to just window.location.reload() or manually update state
+            window.location.reload();
         }
-      } catch (error) {
-        console.error('Error rejecting appointment:', error);
-        // Update local state even if API call fails (for demo purposes)
-        setAppointments(prevAppointments =>
-          prevAppointments.map(apt =>
-            apt.id === appointmentId
-              ? { ...apt, status: 'cancelled' }
-              : apt
-          )
-        );
-      }
+    } catch (error) {
+        console.error('Error rescheduling:', error);
     }
   };
 
   const handleCompleteAppointment = async (appointmentId) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/appointments/${appointmentId}/complete`, {
+      const response = await authFetch(`http://localhost:5000/api/appointments/${appointmentId}/complete`, {
         method: 'PUT',
       });
-
       if (response.ok) {
-        setAppointments(prevAppointments =>
-          prevAppointments.map(apt =>
-            apt.id === appointmentId
-              ? { ...apt, status: 'completed' }
-              : apt
-          )
-        );
-      } else {
-        // Update local state anyway (for demo purposes)
-        setAppointments(prevAppointments =>
-          prevAppointments.map(apt =>
-            apt.id === appointmentId
-              ? { ...apt, status: 'completed' }
-              : apt
-          )
-        );
+        const completedApt = upcomingAppointments.find(a => a._id === appointmentId);
+        if (completedApt) {
+            completedApt.status = 'completed';
+            setCompletedAppointments(prev => [...prev, completedApt]);
+        }
+        setUpcomingAppointments(prev => prev.filter(apt => apt._id !== appointmentId));
       }
     } catch (error) {
       console.error('Error completing appointment:', error);
-      // Update local state even if API call fails (for demo purposes)
-      setAppointments(prevAppointments =>
-        prevAppointments.map(apt =>
-          apt.id === appointmentId
-            ? { ...apt, status: 'completed' }
-            : apt
-        )
-      );
     }
   };
 
-  if (!currentDoctor) {
-    return <div className={styles.container}>Doctor not found</div>;
+  if (loading) {
+    return <div className={styles.container} style={{textAlign:'center', padding:'50px'}}>Loading dashboard...</div>;
   }
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <div className={styles.profileHeader}>
-          <img src={currentDoctor.image} alt={currentDoctor.name} className={styles.profileImage} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <ProfileImageUpload size={100} />
           <div>
-            <h1 className={styles.title}>Welcome, {currentDoctor.name}</h1>
-            <p className={styles.subtitle}>{currentDoctor.specialty} • {currentDoctor.hospitalId && getAppointmentHospital(currentDoctor.hospitalId)?.name}</p>
+            <h1 className={styles.title}>Welcome back, Dr. {user?.name?.replace('Dr. ', '') || 'Doctor'}!</h1>
+            <p className={styles.subtitle}>
+              {user?.specialty ? `${user.specialty} • ` : ''} Manage your patients and schedule
+            </p>
           </div>
         </div>
       </div>
@@ -208,22 +144,8 @@ const DoctorDashboard = () => {
         <div className={styles.statCard}>
           <div className={styles.statIcon}>📅</div>
           <div className={styles.statInfo}>
-            <h3>Today's Appointments</h3>
-            <p className={styles.statValue}>{todayAppointments.length}</p>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon}>⏳</div>
-          <div className={styles.statInfo}>
-            <h3>Pending</h3>
-            <p className={styles.statValue}>{pendingAppointments.length}</p>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon}>⏰</div>
-          <div className={styles.statInfo}>
-            <h3>Upcoming</h3>
-            <p className={styles.statValue}>{upcomingAppointments.filter(a => a.status === 'upcoming').length}</p>
+            <h3>Upcoming Appointments</h3>
+            <p className={styles.statValue}>{upcomingAppointments.length}</p>
           </div>
         </div>
         <div className={styles.statCard}>
@@ -237,32 +159,20 @@ const DoctorDashboard = () => {
           <div className={styles.statIcon}>⭐</div>
           <div className={styles.statInfo}>
             <h3>Rating</h3>
-            <p className={styles.statValue}>{currentDoctor.rating}</p>
+            <p className={styles.statValue}>4.9</p>
           </div>
         </div>
       </div>
-
-      <div className={styles.quickActions}>
-        <Link to="/doctor-availability" className={styles.actionCard}>
-          <div className={styles.actionIcon}>📊</div>
-          <h3>Availability Heatmap</h3>
-          <p>View and manage your schedule</p>
-        </Link>
-      </div>
+      
+      {user?.id && (
+        <DoctorPerformanceChart 
+          doctorId={user.id}
+          doctorName={user.name} 
+          authFetch={authFetch} 
+        />
+      )}
 
       <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${selectedTab === 'today' ? styles.active : ''}`}
-          onClick={() => setSelectedTab('today')}
-        >
-          Today
-        </button>
-        <button
-          className={`${styles.tab} ${selectedTab === 'pending' ? styles.active : ''}`}
-          onClick={() => setSelectedTab('pending')}
-        >
-          Pending {pendingAppointments.length > 0 && `(${pendingAppointments.length})`}
-        </button>
         <button
           className={`${styles.tab} ${selectedTab === 'upcoming' ? styles.active : ''}`}
           onClick={() => setSelectedTab('upcoming')}
@@ -276,6 +186,12 @@ const DoctorDashboard = () => {
           Completed
         </button>
         <button
+          className={`${styles.tab} ${selectedTab === 'cancelled' ? styles.active : ''}`}
+          onClick={() => setSelectedTab('cancelled')}
+        >
+          Cancelled
+        </button>
+        <button
           className={`${styles.tab} ${selectedTab === 'availability' ? styles.active : ''}`}
           onClick={() => setSelectedTab('availability')}
         >
@@ -284,109 +200,45 @@ const DoctorDashboard = () => {
       </div>
 
       <div className={styles.appointmentsList}>
-        {selectedTab === 'today' && (
-          <>
-            {todayAppointments.length > 0 ? (
-              todayAppointments.map(appointment => {
-                const hospital = getAppointmentHospital(appointment.hospitalId);
-                return (
-                  <div key={appointment.id} className={styles.appointmentCard}>
-                    <div className={styles.appointmentTime}>
-                      <span className={styles.time}>{appointment.time}</span>
-                      <span className={styles.date}>{appointment.date}</span>
-                    </div>
-                    <div className={styles.appointmentDetails}>
-                      <h3 className={styles.patientName}>{appointment.patientName}</h3>
-                      <p className={styles.reason}>Reason: {appointment.reason}</p>
-                      <p className={styles.hospital}>{hospital?.name}</p>
-                    </div>
-                    <div className={styles.appointmentActions}>
-                      <button className={styles.actionButton}>View Details</button>
-                      <button 
-                        className={styles.completeButton}
-                        onClick={() => handleCompleteAppointment(appointment.id)}
-                      >
-                        Complete
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className={styles.emptyState}>No appointments for today</div>
-            )}
-          </>
-        )}
-
         {selectedTab === 'upcoming' && (
           <>
             {upcomingAppointments.length > 0 ? (
-              upcomingAppointments.map(appointment => {
-                const hospital = getAppointmentHospital(appointment.hospitalId);
-                return (
-                  <div key={appointment.id} className={styles.appointmentCard}>
-                    <div className={styles.appointmentTime}>
-                      <span className={styles.time}>{appointment.time}</span>
-                      <span className={styles.date}>{appointment.date}</span>
-                    </div>
-                    <div className={styles.appointmentDetails}>
-                      <h3 className={styles.patientName}>{appointment.patientName}</h3>
-                      <p className={styles.reason}>Reason: {appointment.reason}</p>
-                      <p className={styles.hospital}>{hospital?.name}</p>
-                    </div>
-                    <div className={styles.appointmentActions}>
-                      <button className={styles.actionButton}>View Details</button>
-                      <button 
-                        className={styles.cancelButton}
-                        onClick={() => handleCancelAppointment(appointment.id)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
+              upcomingAppointments.map(appointment => (
+                <div key={appointment._id} className={styles.appointmentCard}>
+                  <div className={styles.appointmentTime}>
+                    <span className={styles.time}>{appointment.time}</span>
+                    <span className={styles.date}>{appointment.date}</span>
                   </div>
-                );
-              })
-            ) : (
-              <div className={styles.emptyState}>No upcoming appointments</div>
-            )}
-          </>
-        )}
-
-        {selectedTab === 'pending' && (
-          <>
-            {pendingAppointments.length > 0 ? (
-              pendingAppointments.map(appointment => {
-                const hospital = getAppointmentHospital(appointment.hospitalId);
-                return (
-                  <div key={appointment.id} className={styles.appointmentCard}>
-                    <div className={styles.appointmentTime}>
-                      <span className={styles.time}>{appointment.time}</span>
-                      <span className={styles.date}>{appointment.date}</span>
-                    </div>
-                    <div className={styles.appointmentDetails}>
-                      <h3 className={styles.patientName}>{appointment.patientName}</h3>
-                      <p className={styles.reason}>Reason: {appointment.reason}</p>
-                      <p className={styles.hospital}>{hospital?.name}</p>
-                    </div>
-                    <div className={styles.appointmentActions}>
-                      <button 
-                        className={styles.acceptButton}
-                        onClick={() => handleAcceptAppointment(appointment.id)}
-                      >
-                        Accept
-                      </button>
-                      <button 
-                        className={styles.rejectButton}
-                        onClick={() => handleRejectAppointment(appointment.id)}
-                      >
-                        Reject
-                      </button>
-                    </div>
+                  <div className={styles.appointmentDetails}>
+                    <h3 className={styles.patientName}>{appointment.patientName}</h3>
+                    <p className={styles.reason}>Contact: {appointment.patientPhone || appointment.patientEmail}</p>
+                    <p className={styles.hospital}>{appointment.clinicName} • {appointment.mode} Mode</p>
                   </div>
-                );
-              })
+                  <div className={styles.appointmentActions}>
+                    <button 
+                      className={styles.completeButton}
+                      onClick={() => handleCompleteAppointment(appointment._id)}
+                    >
+                      Complete
+                    </button>
+                    <button 
+                      className={styles.rescheduleButton}
+                      onClick={() => setRescheduleModal({ show: true, appointmentId: appointment._id, date: '', time: '', reason: '' })}
+                      style={{ background: '#f59e0b', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+                    >
+                      Reschedule
+                    </button>
+                    <button 
+                      className={styles.cancelButton}
+                      onClick={() => handleCancelAppointment(appointment._id)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ))
             ) : (
-              <div className={styles.emptyState}>No pending appointments</div>
+              <div className={styles.emptyState}>No upcoming appointments scheduled</div>
             )}
           </>
         )}
@@ -394,26 +246,22 @@ const DoctorDashboard = () => {
         {selectedTab === 'completed' && (
           <>
             {completedAppointments.length > 0 ? (
-              completedAppointments.map(appointment => {
-                const hospital = getAppointmentHospital(appointment.hospitalId);
-                return (
-                  <div key={appointment.id} className={styles.appointmentCard}>
-                    <div className={styles.appointmentTime}>
-                      <span className={styles.time}>{appointment.time}</span>
-                      <span className={styles.date}>{appointment.date}</span>
-                    </div>
-                    <div className={styles.appointmentDetails}>
-                      <h3 className={styles.patientName}>{appointment.patientName}</h3>
-                      <p className={styles.reason}>Reason: {appointment.reason}</p>
-                      <p className={styles.hospital}>{hospital?.name}</p>
-                    </div>
-                    <div className={styles.appointmentActions}>
-                      <button className={styles.actionButton}>View Records</button>
-                      <span className={styles.completedBadge}>Completed</span>
-                    </div>
+              completedAppointments.map(appointment => (
+                <div key={appointment._id} className={styles.appointmentCard}>
+                  <div className={styles.appointmentTime}>
+                    <span className={styles.time}>{appointment.time}</span>
+                    <span className={styles.date}>{appointment.date}</span>
                   </div>
-                );
-              })
+                  <div className={styles.appointmentDetails}>
+                    <h3 className={styles.patientName}>{appointment.patientName}</h3>
+                    <p className={styles.reason}>Contact: {appointment.patientPhone || appointment.patientEmail}</p>
+                    <p className={styles.hospital}>{appointment.clinicName}</p>
+                  </div>
+                  <div className={styles.appointmentActions}>
+                    <span className={styles.completedBadge}>Completed</span>
+                  </div>
+                </div>
+              ))
             ) : (
               <div className={styles.emptyState}>No completed appointments</div>
             )}
@@ -421,65 +269,75 @@ const DoctorDashboard = () => {
         )}
 
         {selectedTab === 'availability' && (
-          <div className={styles.availabilitySection}>
-            <h2 className={styles.sectionTitle}>Set Your Availability</h2>
-            <div className={styles.availabilityGrid}>
-              {Object.entries(availabilitySettings).map(([day, settings]) => (
-                <div key={day} className={styles.availabilityCard}>
-                  <div className={styles.availabilityHeader}>
-                    <h3>{day.charAt(0).toUpperCase() + day.slice(1)}</h3>
-                    <label className={styles.toggle}>
-                      <input
-                        type="checkbox"
-                        checked={settings.available}
-                        onChange={(e) => setAvailabilitySettings(prev => ({
-                          ...prev,
-                          [day]: { ...prev[day], available: e.target.checked }
-                        }))}
-                      />
-                      <span className={styles.slider}></span>
-                    </label>
-                  </div>
-                  {settings.available && (
-                    <div className={styles.timeInputs}>
-                      <div className={styles.timeGroup}>
-                        <label>Start</label>
-                        <input
-                          type="time"
-                          value={settings.start}
-                          onChange={(e) => setAvailabilitySettings(prev => ({
-                            ...prev,
-                            [day]: { ...prev[day], start: e.target.value }
-                          }))}
-                        />
-                      </div>
-                      <div className={styles.timeGroup}>
-                        <label>End</label>
-                        <input
-                          type="time"
-                          value={settings.end}
-                          onChange={(e) => setAvailabilitySettings(prev => ({
-                            ...prev,
-                            [day]: { ...prev[day], end: e.target.value }
-                          }))}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <button 
+          <div className={styles.availabilitySection} style={{ textAlign: 'center', padding: '40px' }}>
+            <h2 className={styles.sectionTitle}>Manage Your Schedule</h2>
+            <p style={{ marginBottom: '24px', color: 'var(--color-text-muted)' }}>
+              Use our advanced Heatmap tool to view appointment density and set your weekly hours.
+            </p>
+            <Link 
+              to="/doctor-availability" 
               className={styles.saveButton}
-              onClick={() => {
-                alert('Availability settings saved successfully!');
-              }}
+              style={{ textDecoration: 'none', display: 'inline-block' }}
             >
-              Save Availability Settings
-            </button>
+              Open Availability Heatmap →
+            </Link>
           </div>
         )}
+
+        {selectedTab === 'cancelled' && (
+          <>
+            {cancelledAppointments.length > 0 ? (
+              cancelledAppointments.map(appointment => (
+                <div key={appointment._id} className={styles.appointmentCard} style={{ opacity: 0.7 }}>
+                  <div className={styles.appointmentTime}>
+                    <span className={styles.time}>{appointment.time}</span>
+                    <span className={styles.date}>{appointment.date}</span>
+                  </div>
+                  <div className={styles.appointmentDetails}>
+                    <h3 className={styles.patientName}>{appointment.patientName}</h3>
+                    <p className={styles.patientInfo}>{appointment.patientEmail || appointment.patientPhone}</p>
+                    <p className={styles.appointmentType}>{appointment.mode} Mode</p>
+                  </div>
+                  <div className={styles.statusBadge} style={{ color: '#ef4444', backgroundColor: '#fee2e2', padding: '4px 12px', borderRadius: '12px', fontSize: '0.875rem', fontWeight: '500' }}>
+                    Cancelled
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyState}>No cancelled appointments</div>
+            )}
+          </>
+        )}
       </div>
+
+      {/* Reschedule Modal */}
+      {rescheduleModal.show && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', width: '400px', maxWidth: '90%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+            <h2 style={{ margin: '0 0 20px', color: '#1e293b' }}>Reschedule Appointment</h2>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', color: '#64748b', fontSize: '14px', fontWeight: '500' }}>New Date</label>
+              <input type="date" value={rescheduleModal.date} onChange={e => setRescheduleModal(prev => ({ ...prev, date: e.target.value }))} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', color: '#64748b', fontSize: '14px', fontWeight: '500' }}>New Time</label>
+              <input type="time" value={rescheduleModal.time} onChange={e => setRescheduleModal(prev => ({ ...prev, time: e.target.value }))} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+            </div>
+
+            <div style={{ marginBottom: '25px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', color: '#64748b', fontSize: '14px', fontWeight: '500' }}>Reason (Optional)</label>
+              <input type="text" placeholder="e.g., Unexpected emergency" value={rescheduleModal.reason} onChange={e => setRescheduleModal(prev => ({ ...prev, reason: e.target.value }))} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setRescheduleModal({ show: false, appointmentId: null, date: '', time: '', reason: '' })} style={{ padding: '10px 16px', borderRadius: '6px', background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontWeight: '500' }}>Cancel</button>
+              <button onClick={submitReschedule} style={{ padding: '10px 16px', borderRadius: '6px', background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '500' }}>Confirm Reschedule</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

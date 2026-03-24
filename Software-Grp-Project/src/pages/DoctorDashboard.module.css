@@ -11,58 +11,42 @@
 }
 
 .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 40px;
 }
 
-.profileHeader {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
-  backdrop-filter: blur(16px);
-  border-radius: 20px;
-  padding: 32px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 35px rgba(220, 20, 60, 0.3);
-}
-
-.profileImage {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-}
-
 .title {
-  font-size: 36px;
+  font-size: 46px;
+  line-height: 1.2;
   font-weight: 800;
   margin-bottom: 8px;
+  color: var(--color-charcoal);
 }
 
 .subtitle {
   font-size: 18px;
-  color: #cbd5e0;
+  color: var(--color-text-muted);
 }
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 24px;
   margin-bottom: 40px;
 }
 
 .statCard {
-  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
-  backdrop-filter: blur(16px);
+  background-color: var(--color-white);
   border-radius: 16px;
   padding: 24px;
   display: flex;
   align-items: center;
   gap: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 35px rgba(220, 20, 60, 0.3);
-  transition: transform 0.3s ease;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
 }
 
 .statCard:hover {
@@ -76,7 +60,7 @@
 .statInfo h3 {
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-muted);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -85,20 +69,62 @@
 .statValue {
   font-size: 32px;
   font-weight: 800;
+  color: var(--color-crimson);
+}
+
+.quickActions {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-bottom: 40px;
+}
+
+.actionCard {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
+}
+
+.actionCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(44, 44, 44, 0.15);
+  border-color: var(--color-crimson);
+}
+
+.actionIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.actionCard h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-charcoal);
+}
+
+.actionCard p {
+  font-size: 14px;
+  color: var(--color-text-muted);
 }
 
 .tabs {
   display: flex;
   gap: 12px;
   margin-bottom: 32px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .tab {
   padding: 12px 24px;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-muted);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -108,12 +134,12 @@
 }
 
 .tab:hover {
-  color: #ffffff;
+  color: var(--color-text-primary);
 }
 
 .tab.active {
-  color: #ffffff;
-  border-bottom-color: var(--color-crimson-soft);
+  color: var(--color-crimson);
+  border-bottom-color: var(--color-crimson);
 }
 
 .appointmentsList {
@@ -123,19 +149,20 @@
 }
 
 .appointmentCard {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
+  background-color: var(--color-white);
   border-radius: 16px;
   padding: 24px;
   display: flex;
   gap: 24px;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: transform 0.3s ease;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
 }
 
 .appointmentCard:hover {
   transform: translateX(8px);
+  box-shadow: 0 8px 24px rgba(44, 44, 44, 0.15);
 }
 
 .appointmentTime {
@@ -144,7 +171,7 @@
   align-items: center;
   min-width: 100px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-bg-light);
   border-radius: 12px;
 }
 
@@ -152,11 +179,12 @@
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 4px;
+  color: var(--color-crimson);
 }
 
 .date {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-muted);
 }
 
 .appointmentDetails {
@@ -167,27 +195,31 @@
   font-size: 20px;
   font-weight: 700;
   margin-bottom: 8px;
+  color: var(--color-charcoal);
 }
 
 .reason {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-primary);
   margin-bottom: 4px;
 }
 
 .hospital {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-muted);
 }
 
 .appointmentActions {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  align-items: center;
+  min-width: 120px;
 }
 
 .actionButton,
 .completeButton,
+.acceptButton,
+.rejectButton,
 .cancelButton {
   padding: 10px 20px;
   border-radius: 10px;
@@ -196,97 +228,86 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-align: center;
 }
 
 .actionButton {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: var(--color-white);
+  color: var(--color-charcoal);
+  border: 1px solid var(--color-border);
 }
 
 .actionButton:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background-color: var(--color-bg-light);
+  border-color: var(--color-crimson);
 }
 
-.completeButton {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #ffffff;
-}
-
-.completeButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-}
-
-.cancelButton {
-  background: rgba(239, 68, 68, 0.3);
-  color: #ffffff;
-  border: 1px solid rgba(239, 68, 68, 0.5);
-}
-
-.cancelButton:hover {
-  background: rgba(239, 68, 68, 0.5);
-}
-
-.acceptButton {
-  background: rgba(16, 185, 129, 0.3);
+.completeButton, .acceptButton {
+  background-color: var(--color-white);
   color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.5);
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
-  font-size: 14px;
+  border: 1px solid #10b981;
+}
+
+.completeButton:hover, .acceptButton:hover {
+  background-color: #10b981;
+  color: white;
+}
+
+.rejectButton, .cancelButton {
+  background-color: var(--color-white);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.rejectButton:hover, .cancelButton:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.completedBadge {
+  padding: 8px 16px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-radius: 12px;
+  font-size: 12px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  text-align: center;
 }
 
-.acceptButton:hover {
-  background: rgba(16, 185, 129, 0.5);
+.emptyState {
+  text-align: center;
+  padding: 60px;
+  background-color: var(--color-bg-light);
+  border-radius: 16px;
+  font-size: 18px;
+  color: var(--color-text-muted);
 }
 
-.rejectButton {
-  background: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.5);
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.rejectButton:hover {
-  background: rgba(239, 68, 68, 0.5);
-}
-
+/* Availability Section */
 .availabilitySection {
-  padding: 24px;
-  background: linear-gradient(150deg, rgba(220, 20, 60, 0.35), var(--color-surface-elevated));
-  backdrop-filter: blur(16px);
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  padding: 32px;
+  background-color: var(--color-white);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
 }
 
 .sectionTitle {
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 24px;
-  color: var(--color-crimson-soft);
+  color: var(--color-charcoal);
 }
 
 .availabilityGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
 }
 
 .availabilityCard {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  background-color: var(--color-bg-light);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 20px;
 }
@@ -302,8 +323,10 @@
   font-size: 16px;
   font-weight: 600;
   margin: 0;
+  color: var(--color-charcoal);
 }
 
+/* Toggle Switch Styling */
 .toggle {
   position: relative;
   display: inline-block;
@@ -324,7 +347,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(148, 163, 184, 0.3);
+  background-color: var(--color-border);
   transition: 0.3s;
   border-radius: 24px;
 }
@@ -339,10 +362,11 @@
   background-color: white;
   transition: 0.3s;
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .toggle input:checked + .slider {
-  background-color: var(--color-crimson-soft);
+  background-color: var(--color-crimson);
 }
 
 .toggle input:checked + .slider:before {
@@ -363,84 +387,71 @@
 
 .timeGroup label {
   font-size: 12px;
-  color: #a0aec0;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .timeGroup input {
-  padding: 8px;
+  padding: 8px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  background-color: rgba(15, 23, 42, 0.8);
-  color: #e2e8f0;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-white);
+  color: var(--color-charcoal);
   font-size: 14px;
+  font-family: inherit;
 }
 
 .timeGroup input:focus {
   outline: none;
-  border-color: var(--color-crimson-soft);
-  box-shadow: 0 0 0 1px rgba(220, 20, 60, 0.4);
+  border-color: var(--color-crimson);
+  box-shadow: 0 0 0 2px rgba(177, 18, 38, 0.1);
 }
 
 .saveButton {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--color-crimson), var(--color-crimson-dark));
-  color: #ffffff;
+  display: inline-block;
+  padding: 14px 28px;
+  background-color: var(--color-crimson);
+  color: var(--color-white);
   border: none;
   border-radius: 999px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 16px 40px rgba(220, 20, 60, 0.7);
-  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(177, 18, 38, 0.3);
+  transition: all 0.3s ease;
 }
 
 .saveButton:hover {
-  filter: brightness(1.05);
+  background-color: var(--color-crimson-dark);
   transform: translateY(-2px);
-  box-shadow: 0 0 26px rgba(220, 20, 60, 0.95);
-}
-
-.completedBadge {
-  padding: 8px 16px;
-  background: rgba(16, 185, 129, 0.3);
-  color: #10b981;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.emptyState {
-  text-align: center;
-  padding: 60px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 6px 20px rgba(177, 18, 38, 0.4);
 }
 
 @media (max-width: 768px) {
   .container {
     padding: 24px;
   }
-
-  .profileHeader {
+  .header {
     flex-direction: column;
-    text-align: center;
+    align-items: flex-start;
+    gap: 20px;
   }
-
+  .title {
+    font-size: 32px;
+  }
   .appointmentCard {
     flex-direction: column;
     align-items: stretch;
   }
-
   .appointmentTime {
     flex-direction: row;
     justify-content: space-between;
   }
-
   .appointmentActions {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: flex-end;
   }
 }
 

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: hc_backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: always
+
+  frontend:
+    build:
+      context: ./Software-Grp-Project
+    container_name: hc_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./Software-Grp-Project:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: always

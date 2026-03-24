@@ -46,6 +46,8 @@ const hospitalRoutes    = require('./routes/hospitalRoutes');
 const doctorRoutes      = require('./routes/doctorRoutes');
 const departmentRoutes  = require('./routes/departmentRoutes');
 const medicineRoutes    = require('./routes/medicineRoutes');
+const analyticsRoutes   = require('./routes/analyticsRoutes');
+const auditRoutes       = require('./routes/auditRoutes');
 const authenticate      = require('./middleware/authenticate');
 const appointmentController = require('./controllers/appointmentController');
 
@@ -56,6 +58,8 @@ app.use('/api/hospitals',          hospitalRoutes);
 app.use('/api/doctors',            doctorRoutes);
 app.use('/api/departments',        departmentRoutes);
 app.use('/api/medicine-suggestion',medicineRoutes);
+app.use('/api/analytics',          analyticsRoutes);
+app.use('/api/audit',              auditRoutes);
 
 // Aliases for assignment-style endpoints (same logic, same auth)
 app.post('/book-appointment', authenticate, appointmentController.bookAppointment);

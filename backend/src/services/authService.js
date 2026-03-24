@@ -56,7 +56,7 @@ const authService = {
      */
     sanitizeUser(user) {
         return {
-            id: user.id,
+            id: user.id || user._id,
             name: user.name,
             email: user.email,
             role: user.role,
@@ -64,6 +64,9 @@ const authService = {
             age: user.age,
             gender: user.gender,
             address: user.address,
+            specialty: user.specialty,
+            license: user.license,
+            profileImage: user.profileImage,
             isVerified: user.isVerified,
             lastLogin: user.lastLogin,
             createdAt: user.createdAt

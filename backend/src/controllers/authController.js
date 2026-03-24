@@ -2,6 +2,9 @@ const User = require('../models/User');
 const Session = require('../models/Session');
 const authService = require('../services/authService');
 const otpService = require('../services/otpService');
+const loggingService = require('../services/loggingService');
+const securityService = require('../services/securityService');
+const { sendLoginOtpEmail, sendSecurityAlertEmail } = require('../services/emailService');
 require('dotenv').config();
 
 const MAX_FAILED_ATTEMPTS = 5;
@@ -14,13 +17,13 @@ const authController = {
     // ─────────────────────────────────────────────
     async register(req, res) {
         try {
-            const { name, email, password, role, phone, age, gender, address } = req.body;
+            const { name, email, password, role, phone, age, gender, address, specialty, license } = req.body;
 
             if (!name || !email || !password) {
                 return res.status(400).json({ success: false, message: 'Name, email, and password are required.' });
             }
 
-            const existing = await User.findOne({ where: { email } });
+            const existing = await User.findOne({ email });
             if (existing) {
                 return res.status(409).json({ success: false, message: 'An account with this email already exists.' });
             }
@@ -33,6 +36,7 @@ const authController = {
                 password: hashedPassword,
                 role: role || 'patient',
                 phone, age, gender, address,
+                specialty, license,
                 isVerified: false
             });
 
@@ -42,7 +46,7 @@ const authController = {
             res.status(201).json({
                 success: true,
                 message: 'Registration successful. Please check your email for the OTP.',
-                userId: user.id
+                userId: user._id
             });
 
         } catch (err) {
@@ -68,7 +72,7 @@ const authController = {
             }
 
             if (type === 'registration') {
-                await User.update({ isVerified: true }, { where: { email } });
+                await User.updateOne({ email }, { isVerified: true });
                 return res.json({ success: true, message: 'Email verified successfully. You can now log in.' });
             }
 
@@ -88,7 +92,7 @@ const authController = {
         try {
             const { email, type = 'registration' } = req.body;
 
-            const user = await User.findOne({ where: { email } });
+            const user = await User.findOne({ email });
             if (!user) {
                 return res.status(404).json({ success: false, message: 'No account found with this email.' });
             }
@@ -118,7 +122,7 @@ const authController = {
                 return res.status(400).json({ success: false, message: 'Email and password are required.' });
             }
 
-            const user = await User.findOne({ where: { email } });
+            const user = await User.findOne({ email });
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Invalid email or password.' });
             }
@@ -143,11 +147,29 @@ const authController = {
             const passwordMatch = await authService.comparePassword(password, user.password);
             if (!passwordMatch) {
                 user.failedLoginAttempts += 1;
+                
+                // Log failure (Non-blocking)
+                loggingService.recordLog(req, {
+                    userId: user._id,
+                    action: 'LOGIN_FAILURE_INVALID_PASSWORD',
+                    category: 'AUTH',
+                    status: 'FAILURE',
+                    details: { email }
+                });
 
                 if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
                     user.isLocked = true;
                     user.lockUntil = new Date(Date.now() + LOCK_DURATION_MS);
                     await user.save();
+                    
+                    loggingService.recordLog(req, {
+                        userId: user._id,
+                        action: 'ACCOUNT_LOCKED',
+                        category: 'AUTH',
+                        status: 'WARNING',
+                        details: { reason: 'Too many failed attempts' }
+                    });
+
                     return res.status(403).json({
                         success: false,
                         message: `Account locked after ${MAX_FAILED_ATTEMPTS} failed attempts. Try again in 30 minutes.`
@@ -171,46 +193,132 @@ const authController = {
                 });
             }
 
-            // Check role match if provided
-            if (role && user.role !== role) {
-                return res.status(401).json({ success: false, message: 'Role mismatch.' });
+            // --- RISK-BASED MFA CHECK ---
+            const { location, clientIp } = loggingService.recordLog(req, { 
+                userId: user._id, 
+                action: 'LOGIN_ATTEMPT', 
+                category: 'AUTH' 
+            });
+
+            const recognized = await securityService.isLocationRecognized(user, location);
+            
+            if (!recognized) {
+                // Suspicious login detected! Require MFA.
+                const otp = await otpService.generate(email, 'login-mfa');
+                await sendLoginOtpEmail(email, otp, location);
+
+                return res.status(200).json({
+                    success: true,
+                    requiresMfa: true,
+                    message: 'Login from unrecognized location detected. Please enter the OTP sent to your email.',
+                    email: user.email,
+                    location
+                });
             }
 
-            // Reset failed attempts on successful login
-            user.failedLoginAttempts = 0;
-            user.isLocked = false;
-            user.lockUntil = null;
-            user.lastLogin = new Date();
+            // Location is recognized, update it in background to ensure it stays in history
+            securityService.updateKnownLocation(user._id, location).catch(() => {});
 
-            // Generate tokens
-            const tokenPayload = { id: user.id, email: user.email, role: user.role };
-            const accessToken = authService.generateAccessToken(tokenPayload);
-            const refreshToken = authService.generateRefreshToken(tokenPayload);
-
-            user.refreshToken = refreshToken;
-            await user.save();
-
-            // Track session
-            const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-            await Session.create({
-                userId: user.id,
-                refreshToken,
-                ipAddress: req.ip,
-                userAgent: req.headers['user-agent'],
-                expiresAt: refreshExpiresAt
-            });
-
-            res.json({
-                success: true,
-                message: 'Login successful.',
-                accessToken,
-                refreshToken,
-                user: authService.sanitizeUser(user)
-            });
+            // --- STANDARD SUCCESSFUL LOGIN ---
+            return authController.finalizeLogin(req, res, user, location, clientIp);
 
         } catch (err) {
             console.error('Login error:', err);
             res.status(500).json({ success: false, message: 'Login failed.' });
+        }
+    },
+
+    /**
+     * Helper to finish the login process (token generation, session creation, logging)
+     */
+    async finalizeLogin(req, res, user, location, clientIp, isMfaVerified = false) {
+        // Reset failed attempts on successful login
+        user.failedLoginAttempts = 0;
+        user.isLocked = false;
+        user.lockUntil = null;
+        user.lastLogin = new Date();
+
+        // Generate tokens
+        const tokenPayload = { id: user._id, email: user.email, role: user.role };
+        const accessToken = authService.generateAccessToken(tokenPayload);
+        const refreshToken = authService.generateRefreshToken(tokenPayload);
+
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        // Track session
+        const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await Session.create({
+            userId: user._id,
+            refreshToken,
+            ipAddress: clientIp,
+            userAgent: req.headers['user-agent'],
+            expiresAt: refreshExpiresAt
+        });
+
+        // Log success (Non-blocking)
+        loggingService.recordLog(req, {
+            userId: user._id,
+            action: 'LOGIN_SUCCESS',
+            category: 'AUTH',
+            status: 'SUCCESS',
+            details: { 
+                location, 
+                mfaBypass: !isMfaVerified, 
+                mfaVerified: isMfaVerified 
+            }
+        });
+
+        // Optional: Notify user if it's a new location BUT they just verified via MFA
+        if (isMfaVerified) {
+             sendSecurityAlertEmail(user, location, clientIp).catch(e => console.error('Alert email fail:', e));
+        }
+
+        return res.json({
+            success: true,
+            message: 'Login successful.',
+            accessToken,
+            refreshToken,
+            user: authService.sanitizeUser(user)
+        });
+    },
+
+    // ─────────────────────────────────────────────
+    // POST /api/auth/verify-mfa
+    // ─────────────────────────────────────────────
+    async verifyMfa(req, res) {
+        try {
+            const { email, otp } = req.body;
+            if (!email || !otp) {
+                return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
+            }
+
+            const valid = await otpService.verify(email, otp, 'login-mfa');
+            if (!valid) {
+                loggingService.recordLog(req, {
+                    action: 'MFA_FAILURE',
+                    category: 'AUTH',
+                    status: 'FAILURE',
+                    details: { email }
+                });
+                return res.status(401).json({ success: false, message: 'Invalid or expired security code.' });
+            }
+
+            const user = await User.findOne({ email });
+            const { location, clientIp } = loggingService.recordLog(req, {
+                userId: user._id,
+                action: 'MFA_SUCCESS',
+                category: 'AUTH'
+            });
+
+            // Update known locations after successful MFA
+            await securityService.updateKnownLocation(user._id, location);
+
+            return authController.finalizeLogin(req, res, user, location, clientIp, true);
+
+        } catch (err) {
+            console.error('MFA Verify error:', err);
+            res.status(500).json({ success: false, message: 'Verification failed.' });
         }
     },
 
@@ -231,21 +339,21 @@ const authController = {
                 return res.status(401).json({ success: false, message: 'Invalid or expired refresh token.' });
             }
 
-            const user = await User.findByPk(decoded.id);
+            const user = await User.findById(decoded.id);
             if (!user || user.refreshToken !== refreshToken) {
                 return res.status(401).json({ success: false, message: 'Refresh token revoked or invalid.' });
             }
 
             // Check session is still active
             const session = await Session.findOne({
-                where: { userId: user.id, refreshToken, isActive: true }
+                userId: user._id, refreshToken, isActive: true
             });
             if (!session || session.expiresAt < new Date()) {
                 return res.status(401).json({ success: false, message: 'Session expired. Please log in again.' });
             }
 
             // Issue new access token
-            const tokenPayload = { id: user.id, email: user.email, role: user.role };
+            const tokenPayload = { id: user._id, email: user.email, role: user.role };
             const newAccessToken = authService.generateAccessToken(tokenPayload);
 
             res.json({
@@ -268,15 +376,15 @@ const authController = {
 
             if (refreshToken) {
                 // Invalidate session
-                await Session.update(
-                    { isActive: false },
-                    { where: { refreshToken } }
+                await Session.updateMany(
+                    { refreshToken },
+                    { isActive: false }
                 );
 
                 // Clear stored refresh token on user
-                await User.update(
-                    { refreshToken: null },
-                    { where: { refreshToken } }
+                await User.updateMany(
+                    { refreshToken },
+                    { refreshToken: null }
                 );
             }
 
@@ -298,7 +406,7 @@ const authController = {
                 return res.status(400).json({ success: false, message: 'Email is required.' });
             }
 
-            const user = await User.findOne({ where: { email } });
+            const user = await User.findOne({ email });
             // Always respond the same way to prevent email enumeration
             const genericMessage = 'If an account exists for this email, an OTP has been sent.';
 
@@ -337,12 +445,12 @@ const authController = {
             }
 
             const hashedPassword = await authService.hashPassword(newPassword);
-            await User.update({ password: hashedPassword, refreshToken: null }, { where: { email } });
+            await User.updateOne({ email }, { password: hashedPassword, refreshToken: null });
 
             // Invalidate all sessions
-            const user = await User.findOne({ where: { email } });
+            const user = await User.findOne({ email });
             if (user) {
-                await Session.update({ isActive: false }, { where: { userId: user.id } });
+                await Session.updateMany({ userId: user._id }, { isActive: false });
             }
 
             res.json({ success: true, message: 'Password reset successfully. Please log in with your new password.' });
@@ -358,7 +466,7 @@ const authController = {
     // ─────────────────────────────────────────────
     async getProfile(req, res) {
         try {
-            const user = await User.findByPk(req.user.id);
+            const user = await User.findById(req.user.id);
             if (!user) {
                 return res.status(404).json({ success: false, message: 'User not found.' });
             }
@@ -373,14 +481,14 @@ const authController = {
     // ─────────────────────────────────────────────
     async updateProfile(req, res) {
         try {
-            const { name, phone, age, gender, address } = req.body;
+            const { name, phone, age, gender, address, profileImage } = req.body;
 
-            await User.update(
-                { name, phone, age, gender, address },
-                { where: { id: req.user.id } }
+            await User.updateOne(
+                { _id: req.user.id },
+                { name, phone, age, gender, address, profileImage }
             );
 
-            const updated = await User.findByPk(req.user.id);
+            const updated = await User.findById(req.user.id);
             res.json({ success: true, message: 'Profile updated.', user: authService.sanitizeUser(updated) });
 
         } catch (err) {
@@ -390,19 +498,35 @@ const authController = {
     },
 
     // ─────────────────────────────────────────────
+    // GET /api/auth/doctors  (public)
+    // ─────────────────────────────────────────────
+    async getAllDoctors(req, res) {
+        try {
+            const docs = await User.find({ role: 'doctor' }).select('-password -__v');
+            res.json({ success: true, doctors: docs.map(d => authService.sanitizeUser(d)) });
+        } catch (error) {
+            console.error('getAllDoctors error:', error);
+            res.status(500).json({ success: false, message: 'Server error fetching doctors' });
+        }
+    },
+
+    // ─────────────────────────────────────────────
     // GET /api/auth/sessions  (protected)
     // ─────────────────────────────────────────────
     async getSessions(req, res) {
         try {
-            const sessions = await Session.findAll({
-                where: { userId: req.user.id, isActive: true },
-                attributes: ['id', 'ipAddress', 'userAgent', 'createdAt', 'expiresAt']
-            });
+            const sessions = await Session.find({ userId: req.user.id, isActive: true })
+                                          .select('ipAddress userAgent createdAt expiresAt');
             res.json({ success: true, sessions });
         } catch (err) {
             res.status(500).json({ success: false, message: 'Failed to fetch sessions.' });
         }
     }
 };
+
+// Bind methods to the object to avoid 'this' issues with Express router
+authController.login = authController.login.bind(authController);
+authController.verifyMfa = authController.verifyMfa.bind(authController);
+authController.finalizeLogin = authController.finalizeLogin.bind(authController);
 
 module.exports = authController;

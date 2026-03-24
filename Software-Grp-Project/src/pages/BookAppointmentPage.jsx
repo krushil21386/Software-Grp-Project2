@@ -21,6 +21,16 @@ const BookAppointmentPage = () => {
   const [availableDoctors, setAvailableDoctors] = useState([]);
   const [suggestedSlots, setSuggestedSlots] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [dbDoctors, setDbDoctors] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/auth/doctors')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setDbDoctors(data.doctors);
+      })
+      .catch(console.error);
+  }, []);
 
   const timeSlots = [
     '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM',
@@ -122,7 +132,10 @@ const BookAppointmentPage = () => {
       return;
     }
 
+    const dbDoctor = dbDoctors.find(d => d.name === selectedDoctor.name);
+
     const payload = {
+      doctorId: dbDoctor?.id || null,
       doctorName: selectedDoctor.name,
       specialization: selectedDoctor.specialty,
       clinicName: selectedHospital ? selectedHospital.name : 'Virtual Clinic',
@@ -259,7 +272,7 @@ const BookAppointmentPage = () => {
                       className={`${styles.doctorCard} ${selectedDoctor?.id === doctor.id ? styles.selected : ''}`}
                       onClick={() => handleDoctorSelect(doctor)}
                     >
-                      <img src={doctor.image} alt={doctor.name} className={styles.doctorImage} />
+                      <img src={dbDoctors.find(d => d.name === doctor.name)?.profileImage || doctor.image} alt={doctor.name} className={styles.doctorImage} />
                       <div className={styles.doctorInfo}>
                         <h3>{doctor.name}</h3>
                         <p>{doctor.specialty}</p>
@@ -369,7 +382,7 @@ const BookAppointmentPage = () => {
           <div className={styles.rightColumn}>
             <div className={styles.doctorProfileCard}>
               <div className={styles.profileImageWrapper}>
-                <img src={selectedDoctor.image} alt={selectedDoctor.name} className={styles.profileImageLarge} />
+                <img src={dbDoctors.find(d => d.name === selectedDoctor.name)?.profileImage || selectedDoctor.image} alt={selectedDoctor.name} className={styles.profileImageLarge} />
                 <div className={styles.onlineBadge}></div>
               </div>
               <h2 className={styles.profileName}>{selectedDoctor.name}</h2>

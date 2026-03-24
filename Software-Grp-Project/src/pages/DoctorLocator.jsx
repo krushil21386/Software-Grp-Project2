@@ -45,13 +45,23 @@ function MapUpdater({ center, zoom }) {
 }
 
 const DoctorLocator = () => {
-  const [userLocation, setUserLocation] = useState({ lat: 40.7128, lng: -74.0060 });
+  const [dbDoctors, setDbDoctors] = useState([]);
+  const [userLocation, setUserLocation] = useState({ lat: 23.0225, lng: 72.5714 });
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
   const [nearestDoctors, setNearestDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [mapCenter, setMapCenter] = useState([40.7128, -74.0060]);
+  const [mapCenter, setMapCenter] = useState([23.0225, 72.5714]);
   const [mapZoom, setMapZoom] = useState(6);
   const mapRef = useRef(null);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/auth/doctors')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setDbDoctors(data.doctors);
+      })
+      .catch(console.error);
+  }, []);
 
   const specialties = ['Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Dermatology', 'Oncology', 'Emergency Medicine', 'Internal Medicine'];
 
@@ -69,9 +79,9 @@ const DoctorLocator = () => {
           setLoading(false);
         },
         () => {
-          // Default to New York if geolocation fails
-          const defaultLat = 40.7128;
-          const defaultLng = -74.0060;
+          // Default to Ahmedabad if geolocation fails
+          const defaultLat = 23.0225;
+          const defaultLng = 72.5714;
           setUserLocation({ lat: defaultLat, lng: defaultLng });
           setMapCenter([defaultLat, defaultLng]);
           setMapZoom(6);
@@ -81,8 +91,8 @@ const DoctorLocator = () => {
       );
     } else {
       // Default location
-      const defaultLat = 40.7128;
-      const defaultLng = -74.0060;
+      const defaultLat = 23.0225;
+      const defaultLng = 72.5714;
       setUserLocation({ lat: defaultLat, lng: defaultLng });
       setMapCenter([defaultLat, defaultLng]);
       setMapZoom(6);
@@ -92,7 +102,8 @@ const DoctorLocator = () => {
   }, [selectedSpecialty]);
 
   const findDoctors = (lat, lng, specialty) => {
-    const results = findNearestDoctors(lat, lng, doctors, hospitals, specialty, 100);
+    // Increased maxDistance to 500km so all mock Gujarat doctors appear
+    const results = findNearestDoctors(lat, lng, doctors, hospitals, specialty, 500);
     setNearestDoctors(results);
     
     // Update map center to show all results if there are any
@@ -233,7 +244,7 @@ const DoctorLocator = () => {
                         </div>
                       </div>
                       <div className={styles.doctorImage}>
-                        <img src={doctor.image} alt={doctor.name} />
+                        <img src={dbDoctors.find(d => d.name === doctor.name)?.profileImage || doctor.image} alt={doctor.name} />
                       </div>
                     </div>
 
@@ -264,7 +275,7 @@ const DoctorLocator = () => {
                     </div>
 
                     <div className={styles.doctorDetails}>
-                      <p className={styles.fee}>Consultation Fee: ${doctor.consultationFee}</p>
+                      <p className={styles.fee}>Consultation Fee: Rs. {doctor.consultationFee}</p>
                       <p className={styles.availability}>
                         Available: {doctor.availability.days.join(', ')} - {doctor.availability.hours}
                       </p>

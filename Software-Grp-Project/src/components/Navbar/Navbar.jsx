@@ -14,8 +14,8 @@ const Navbar = () => {
     setIsSidebarOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
     setIsSidebarOpen(false);
   };
@@ -119,6 +119,7 @@ const Navbar = () => {
                   <Link to="/doctor-dashboard" onClick={() => handleLinkClick('/doctor-dashboard')}>Doctor Dashboard</Link>
                   <Link to="/doctor-availability" onClick={() => handleLinkClick('/doctor-availability')}>📅 Availability Heatmap</Link>
                   <Link to="/appointments" onClick={() => handleLinkClick('/appointments')}>My Appointments</Link>
+                  <Link to="/medical-records" onClick={() => handleLinkClick('/medical-records')}>Medical Records</Link>
                 </>
               )}
               {user?.role === 'admin' && (

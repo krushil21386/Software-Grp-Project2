@@ -51,7 +51,7 @@ function App() {
             <Route
               path="/doctor-locator"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['patient', 'doctor', 'admin']}>
                   <DoctorLocator />
                 </ProtectedRoute>
               }
@@ -67,7 +67,7 @@ function App() {
             <Route
               path="/doctor/:id"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['patient', 'doctor', 'admin']}>
                   <DoctorProfile />
                 </ProtectedRoute>
               }
@@ -75,7 +75,7 @@ function App() {
             <Route
               path="/doctor-dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['doctor']}>
                   <DoctorDashboard />
                 </ProtectedRoute>
               }
@@ -83,7 +83,7 @@ function App() {
             <Route
               path="/patient-dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['patient']}>
                   <PatientDashboard />
                 </ProtectedRoute>
               }
@@ -99,7 +99,7 @@ function App() {
             <Route
               path="/medical-records"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['patient', 'doctor']}>
                   <MedicalRecords />
                 </ProtectedRoute>
               }
@@ -107,7 +107,7 @@ function App() {
             <Route
               path="/book-appointment"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['patient', 'doctor', 'admin']}>
                   <BookAppointmentPage />
                 </ProtectedRoute>
               }
@@ -115,7 +115,7 @@ function App() {
             <Route
               path="/doctor-availability"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['doctor']}>
                   <DoctorAvailability />
                 </ProtectedRoute>
               }
@@ -128,7 +128,7 @@ function App() {
             <Route
               path="/medicine-delivery"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['patient', 'doctor', 'admin']}>
                   <MedicineDelivery />
                 </ProtectedRoute>
               }
@@ -136,7 +136,7 @@ function App() {
             <Route
               path="/admin-dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['admin']}>
                   <AdminDashboard />
                 </ProtectedRoute>
               }

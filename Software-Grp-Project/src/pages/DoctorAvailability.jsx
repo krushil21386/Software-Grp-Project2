@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './DoctorAvailability.module.css';
 import { appointments as initialAppointments } from '../utils/mockData';
 
 const DoctorAvailability = () => {
-  const { user } = useAuth();
-  const [appointments, setAppointments] = useState(initialAppointments);
+  const { user, authFetch } = useAuth();
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(0);
   
   // Availability settings
@@ -19,8 +21,54 @@ const DoctorAvailability = () => {
     sunday: { start: '10:00 AM', end: '2:00 PM', available: false },
   });
 
-  const currentDoctorId = user?.id || 1;
-  const doctorAppointments = appointments.filter(a => a.doctorId === currentDoctorId);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch Availability
+        const availRes = await authFetch('http://localhost:5000/api/doctors/availability');
+        const availData = await availRes.json();
+        if (availData.success && availData.availability) {
+          setAvailability(availData.availability);
+        }
+
+        // Fetch Appointments
+        const apptRes = await authFetch('http://localhost:5000/api/appointments/my-appointments');
+        const apptData = await apptRes.json();
+        if (apptData.success) {
+          setAppointments(apptData.upcoming || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch doctor data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [authFetch]);
+
+  const handleSaveSettings = async () => {
+    try {
+      setSaveLoading(true);
+      const res = await authFetch('http://localhost:5000/api/doctors/availability', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schedule: availability })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Availability settings saved to database!');
+      }
+    } catch (err) {
+      console.error('Failed to save availability:', err);
+      alert('Failed to save settings');
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const doctorAppointments = appointments; // Already filtered by doctor on the backend
 
   // Generate next 7 days
   const getWeekDates = () => {
@@ -86,11 +134,11 @@ const DoctorAvailability = () => {
   };
 
   const getHeatmapColor = (value) => {
-    if (value === 0) return '#1a202c';
-    if (value < 25) return '#22543d';
-    if (value < 50) return '#2d5016';
-    if (value < 75) return '#744210';
-    return '#742a2a';
+    if (value === 0) return '#f8fafc'; // Very light grey
+    if (value < 25) return '#dcfce7'; // Light green
+    if (value < 50) return '#fef08a'; // Light yellow
+    if (value < 75) return '#fed7aa'; // Light orange
+    return '#fecaca'; // Light red
   };
 
   return (
@@ -99,6 +147,12 @@ const DoctorAvailability = () => {
         <h1 className={styles.title}>Availability Heatmap</h1>
         <p className={styles.subtitle}>Manage your schedule and view appointment density</p>
       </div>
+
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
+          Loading your schedule...
+        </div>
+      )}
 
       <div className={styles.controls}>
         <button 
@@ -201,6 +255,17 @@ const DoctorAvailability = () => {
               )}
             </div>
           ))}
+        </div>
+        
+        <div style={{ marginTop: '32px', textAlign: 'center' }}>
+          <button 
+            className={styles.navButton} 
+            onClick={handleSaveSettings}
+            disabled={saveLoading}
+            style={{ padding: '12px 32px', fontSize: '16px', fontWeight: '700' }}
+          >
+            {saveLoading ? 'Saving...' : '💾 Save Weekly Availability'}
+          </button>
         </div>
       </div>
     </div>

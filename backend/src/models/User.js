@@ -1,63 +1,26 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+const mongoose = require('mongoose');
 
-const User = sequelize.define('User', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: { isEmail: true }
-    },
-    password: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    role: {
-        type: DataTypes.ENUM('patient', 'doctor', 'admin'),
-        defaultValue: 'patient'
-    },
-    // Profile fields
-    phone: DataTypes.STRING,
-    age: DataTypes.INTEGER,
-    gender: DataTypes.STRING,
-    address: DataTypes.STRING,
-
-    // Auth & Security
-    isVerified: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    isLocked: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    failedLoginAttempts: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
-    },
-    lockUntil: {
-        type: DataTypes.DATE,
-        allowNull: true
-    },
-    refreshToken: {
-        type: DataTypes.TEXT,
-        allowNull: true
-    },
-    lastLogin: {
-        type: DataTypes.DATE,
-        allowNull: true
-    }
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, enum: ['patient', 'doctor', 'admin'], default: 'patient' },
+    phone: { type: String },
+    age: { type: Number },
+    gender: { type: String },
+    address: { type: String },
+    specialty: { type: String },
+    license: { type: String },
+    profileImage: { type: String },
+    isVerified: { type: Boolean, default: false },
+    isLocked: { type: Boolean, default: false },
+    failedLoginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: null },
+    refreshToken: { type: String, default: null },
+    lastLogin: { type: Date, default: null },
+    knownLocations: { type: [String], default: [] }
 }, {
     timestamps: true
 });
 
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);

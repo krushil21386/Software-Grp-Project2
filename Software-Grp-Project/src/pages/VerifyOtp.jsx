@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 const VerifyOtp = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
-  const { verifyOtp, resendOtp, login } = useAuth();
+  const { verifyOtp, verifyMfa, resendOtp, login } = useAuth();
 
   // State passed via navigate(..., { state: { email, type, role, devOtp } })
   const email  = location.state?.email   || '';
@@ -84,6 +84,14 @@ const VerifyOtp = () => {
         if (!data.success) throw data;
         setSuccess('Password reset successfully! Redirecting to login...');
         setTimeout(() => navigate('/login'), 2000);
+      } else if (type === 'login-mfa') {
+        // Multi-Factor Authentication
+        await verifyMfa(email, fullOtp);
+        setSuccess('Security verification successful! Logging you in...');
+        
+        // Grab the intended destination from state
+        const from = location.state?.from?.pathname || '/';
+        setTimeout(() => navigate(from, { replace: true }), 1500);
       } else {
         // Registration verification
         await verifyOtp(email, fullOtp, type);
@@ -134,10 +142,14 @@ const VerifyOtp = () => {
             {type === 'password-reset' ? '🔑' : '✉️'}
           </div>
           <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: 700, margin: 0 }}>
-            {type === 'password-reset' ? 'Reset Password' : 'Verify Your Email'}
+            {type === 'password-reset' ? 'Reset Password' : 
+             type === 'login-mfa' ? 'Security Verification' : 'Verify Your Email'}
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '14px', marginTop: '8px' }}>
-            We sent a 6-digit code to<br />
+            {type === 'login-mfa' 
+              ? `Login attempt detected from ${location.state?.location || 'a new location'}.` 
+              : 'We sent a 6-digit code to'}
+            <br />
             <strong style={{ color: '#0ea5e9' }}>{email}</strong>
           </p>
         </div>

@@ -74,6 +74,20 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  // ── Verify MFA ──────────────────────────────────────────
+  const verifyMfa = async (email, otp) => {
+    const res = await fetch('http://localhost:5000/api/auth/verify-mfa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp })
+    });
+    const data = await res.json();
+    if (!data.success) throw data;
+
+    saveSession(data.user, data.accessToken, data.refreshToken);
+    return data;
+  };
+
   // ── Resend OTP ──────────────────────────────────────────
   const resendOtp = async (email, type = 'registration') => {
     const res  = await fetch(`${API_BASE}/resend-otp`, {
@@ -146,9 +160,17 @@ export const AuthProvider = ({ children }) => {
     return res;
   }, [accessToken, refreshAccessToken]);
 
+  // ── Helper to safely mutate logged in user ───────────────
+  const updateUser = (newUserData) => {
+    const updated = { ...user, ...newUserData };
+    setUser(updated);
+    localStorage.setItem('hc_user', JSON.stringify(updated));
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
+      updateUser,
       accessToken,
       loading,
       isAuthenticated: !!user,
@@ -156,6 +178,7 @@ export const AuthProvider = ({ children }) => {
       register,
       logout,
       verifyOtp,
+      verifyMfa,
       resendOtp,
       authFetch
     }}>

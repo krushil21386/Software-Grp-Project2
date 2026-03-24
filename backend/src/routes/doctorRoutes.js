@@ -1,6 +1,12 @@
 const express = require('express');
 const router  = express.Router();
 const { doctors, hospitals } = require('../data/mockData');
+const authenticate = require('../middleware/authenticate');
+const doctorController = require('../controllers/doctorController');
+
+// Availability Routes (Must be BEFORE /:id)
+router.get('/availability', authenticate, doctorController.getAvailability);
+router.put('/availability', authenticate, doctorController.updateAvailability);
 
 function toRad(deg) { return deg * (Math.PI / 180); }
 

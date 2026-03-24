@@ -20,7 +20,7 @@ const authenticate = async (req, res, next) => {
         const decoded = authService.verifyAccessToken(token);
 
         // Fetch fresh user to ensure account is still valid/unlocked
-        const user = await User.findByPk(decoded.id);
+        const user = await User.findById(decoded.id);
         if (!user) {
             return res.status(401).json({ success: false, message: 'User no longer exists.' });
         }

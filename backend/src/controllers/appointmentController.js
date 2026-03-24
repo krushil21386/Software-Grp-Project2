@@ -1,20 +1,21 @@
 const { v4: uuidv4 } = require('uuid');
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
-const { sendAppointmentConfirmationEmail } = require('../services/emailService');
+const { sendAppointmentConfirmationEmail, sendCancellationEmail, sendRescheduleEmail } = require('../services/emailService');
+const socketIO = require('../socket');
+const loggingService = require('../services/loggingService');
 
 const appointmentController = {
 
     /**
      * POST /book-appointment
-     * Books a new appointment for the authenticated user.
-     * Generates a unique appointmentId, saves to DB, and sends confirmation email.
      */
     async bookAppointment(req, res) {
         try {
-            const userId = req.user.id; // From JWT authenticate middleware
+            const userId = req.user.id;
 
             const {
+                doctorId,
                 doctorName,
                 specialization,
                 clinicName,
@@ -29,14 +30,12 @@ const appointmentController = {
                 mode
             } = req.body;
 
-            // If the user has profile data in DB, prefer it — otherwise use request body
-            const userRecord = await User.findByPk(userId);
+            const userRecord = await User.findById(userId);
             const resolvedPatientName  = patientName  || userRecord?.name;
             const resolvedPatientEmail = patientEmail || userRecord?.email;
             const resolvedPatientPhone = patientPhone || userRecord?.phone;
             const resolvedPatientAddr  = patientAddress || userRecord?.address;
 
-            // Validate required fields (doctor + appointment always required, patient can be resolved from user profile)
             const required = {
                 doctorName,
                 specialization,
@@ -59,11 +58,11 @@ const appointmentController = {
                 });
             }
 
-            // Generate a unique appointment reference ID
             const appointmentId = `APT-${uuidv4().split('-')[0].toUpperCase()}`;
 
             const appointment = await Appointment.create({
                 userId,
+                doctorId,
                 appointmentId,
                 doctorName,
                 specialization,
@@ -80,10 +79,12 @@ const appointmentController = {
                 status: 'upcoming'
             });
 
-            // Send confirmation email — non-blocking so booking succeeds even if email fails
             sendAppointmentConfirmationEmail(appointment.toJSON()).catch(err => {
                 console.error('⚠️  Email send failed (booking still saved):', err.message);
             });
+
+            // Emit real-time update
+            socketIO.getIO().emit('analytics_update', { doctorId, doctorName });
 
             return res.status(201).json({
                 success: true,
@@ -100,19 +101,27 @@ const appointmentController = {
 
     /**
      * GET /my-appointments
-     * Returns ONLY the appointments belonging to the authenticated user.
-     * Separates them into upcoming and completed arrays.
      */
     async getMyAppointments(req, res) {
         try {
-            const userId = req.user.id;
+            const { id: userId, role } = req.user;
+            let all = [];
 
-            const all = await Appointment.findAll({
-                where: { userId },
-                order: [['date', 'ASC'], ['time', 'ASC']]
-            });
+            if (role === 'doctor') {
+                const doctorUser = await User.findById(userId);
+                console.log(`[DEBUG] Doctor Dashboard Search: ID=${userId}, Name="${doctorUser?.name}"`);
+                // Search by doctorId OR doctorName (for legacy/missing data)
+                all = await Appointment.find({
+                    $or: [
+                        { doctorId: userId },
+                        { doctorName: doctorUser.name }
+                    ]
+                }).sort({ date: 1, time: 1 });
+                console.log(`[DEBUG] Found ${all.length} appointments for doctor`);
+            } else {
+                all = await Appointment.find({ userId }).sort({ date: 1, time: 1 });
+            }
 
-            // Split into upcoming (includes only 'upcoming') and completed
             const upcoming  = all.filter(a => a.status === 'upcoming');
             const completed = all.filter(a => a.status === 'completed');
             const cancelled = all.filter(a => a.status === 'cancelled');
@@ -131,13 +140,11 @@ const appointmentController = {
         }
     },
 
-    // ─── Existing handlers (kept for backward compatibility) ─────────────────
-
     async create(req, res) {
         try {
             const { patientId, doctorId, hospitalId, date, time, reason, notes } = req.body;
             const newAppointment = await Appointment.create({
-                userId: patientId, // map legacy patientId → userId
+                userId: patientId,
                 appointmentId: `APT-${uuidv4().split('-')[0].toUpperCase()}`,
                 doctorName: `Doctor #${doctorId}`,
                 specialization: 'General',
@@ -157,10 +164,10 @@ const appointmentController = {
     async getAll(req, res) {
         try {
             const { patientId, status } = req.query;
-            const where = {};
-            if (patientId) where.userId = patientId;
-            if (status)    where.status = status;
-            const appointments = await Appointment.findAll({ where });
+            const filter = {};
+            if (patientId) filter.userId = patientId;
+            if (status)    filter.status = status;
+            const appointments = await Appointment.find(filter);
             res.json({ success: true, appointments });
         } catch (error) {
             res.status(500).json({ success: false, message: 'Failed to fetch appointments' });
@@ -169,7 +176,7 @@ const appointmentController = {
 
     async getById(req, res) {
         try {
-            const appointment = await Appointment.findByPk(req.params.id);
+            const appointment = await Appointment.findById(req.params.id);
             if (appointment) {
                 res.json({ success: true, appointment });
             } else {
@@ -182,9 +189,8 @@ const appointmentController = {
 
     async update(req, res) {
         try {
-            const appointment = await Appointment.findByPk(req.params.id);
+            const appointment = await Appointment.findByIdAndUpdate(req.params.id, req.body, { new: true });
             if (appointment) {
-                await appointment.update(req.body);
                 res.json({ success: true, appointment });
             } else {
                 res.status(404).json({ success: false, message: 'Appointment not found' });
@@ -201,9 +207,21 @@ const appointmentController = {
             if (action === 'reject')   newStatus = 'cancelled';
             if (action === 'complete') newStatus = 'completed';
 
-            const appointment = await Appointment.findByPk(req.params.id);
+            const appointment = await Appointment.findByIdAndUpdate(req.params.id, { status: newStatus }, { new: true });
             if (appointment) {
-                await appointment.update({ status: newStatus });
+                if (newStatus === 'cancelled') {
+                    const reason = req.body.reason || 'Not provided';
+                    sendCancellationEmail(appointment.toJSON(), reason).catch(err => {
+                        console.error('⚠️  Cancellation email failed:', err);
+                    });
+                }
+                
+                // Emit real-time update
+                socketIO.getIO().emit('analytics_update', { 
+                    doctorId: appointment.doctorId, 
+                    doctorName: appointment.doctorName 
+                });
+                
                 res.json({ success: true, message: `Appointment ${newStatus}` });
             } else {
                 res.status(404).json({ success: false, message: 'Appointment not found' });
@@ -213,11 +231,59 @@ const appointmentController = {
         }
     },
 
+    async reschedule(req, res) {
+        try {
+            const { date, time, reason } = req.body;
+            if (!date || !time) {
+                return res.status(400).json({ success: false, message: 'New date and time are required.' });
+            }
+
+            const appointment = await Appointment.findById(req.params.id);
+            if (!appointment) {
+                return res.status(404).json({ success: false, message: 'Appointment not found' });
+            }
+
+            // reset reminders so they trigger again if applicable
+            appointment.date = date;
+            appointment.time = time;
+            appointment.reminder24hSent = false;
+            appointment.reminder2hSent = false;
+            // if it was cancelled, make it upcoming again
+            appointment.status = 'upcoming';
+
+            await appointment.save();
+
+            sendRescheduleEmail(appointment.toJSON(), date, time, reason || 'Not provided').catch(err => {
+                console.error('⚠️  Reschedule email failed:', err);
+            });
+
+            // Emit real-time update
+            socketIO.getIO().emit('analytics_update', { 
+                status: 'upcoming', // Explicitly include status
+                appointmentId: appointment._id, // Include appointment ID
+                doctorId: appointment.doctorId, 
+                doctorName: appointment.doctorName 
+            });
+
+            // Audit Log (Non-blocking)
+            loggingService.recordLog(req, {
+                userId: req.user.id,
+                action: 'APPOINTMENT_RESCHEDULED',
+                category: 'APPOINTMENT',
+                details: { appointmentId: appointment.appointmentId, doctorName: appointment.doctorName, newDate: date, newTime: time }
+            });
+
+            res.json({ success: true, message: 'Appointment rescheduled successfully', appointment });
+        } catch (error) {
+            res.status(500).json({ success: false, message: 'Reschedule failed' });
+        }
+    },
+
     async delete(req, res) {
         try {
-            const appointment = await Appointment.findByPk(req.params.id);
+            const appointment = await Appointment.findByIdAndUpdate(req.params.id, { status: 'cancelled' }, { new: true });
             if (appointment) {
-                await appointment.update({ status: 'cancelled' });
+                sendCancellationEmail(appointment.toJSON(), 'Canceled by user deleted').catch(err => console.error('Email error:', err));
                 res.json({ success: true, message: 'Appointment cancelled' });
             } else {
                 res.status(404).json({ success: false, message: 'Appointment not found' });

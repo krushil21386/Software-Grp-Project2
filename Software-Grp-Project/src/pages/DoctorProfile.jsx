@@ -7,6 +7,16 @@ const DoctorProfile = () => {
   const { id } = useParams();
   const doctor = doctors.find(d => d.id === parseInt(id));
   const hospital = doctor ? hospitals.find(h => h.id === doctor.hospitalId) : null;
+  const [dbDoctors, setDbDoctors] = useState([]);
+
+  React.useEffect(() => {
+    fetch('http://localhost:5000/api/auth/doctors')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setDbDoctors(data.doctors);
+      })
+      .catch(console.error);
+  }, []);
 
   if (!doctor || !hospital) {
     return (
@@ -27,7 +37,7 @@ const DoctorProfile = () => {
       <div className={styles.profileSection}>
         <div className={styles.profileCard}>
           <div className={styles.profileImage}>
-            <img src={doctor.image} alt={doctor.name} />
+            <img src={dbDoctors.find(d => d.name === doctor.name)?.profileImage || doctor.image} alt={doctor.name} />
           </div>
 
           <div className={styles.profileInfo}>
@@ -79,7 +89,7 @@ const DoctorProfile = () => {
 
           <div className={styles.detailCard}>
             <h3>Consultation Fee</h3>
-            <p className={styles.fee}>${doctor.consultationFee}</p>
+            <p className={styles.fee}>Rs.{doctor.consultationFee}</p>
           </div>
         </div>
 

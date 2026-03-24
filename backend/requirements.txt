@@ -1,9 +1,0 @@
-transformers
-torch
-torchvision
-vocab
-sentencepiece
-Pillow
-addict
-matplotlib
-requests

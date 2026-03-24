@@ -1,38 +1,14 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+const mongoose = require('mongoose');
 
-const Session = sequelize.define('Session', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    refreshToken: {
-        type: DataTypes.TEXT,
-        allowNull: false
-    },
-    ipAddress: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    userAgent: {
-        type: DataTypes.TEXT,
-        allowNull: true
-    },
-    expiresAt: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
-    isActive: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true
-    }
+const sessionSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    refreshToken: { type: String, required: true },
+    ipAddress: { type: String, default: null },
+    userAgent: { type: String, default: null },
+    expiresAt: { type: Date, required: true },
+    isActive: { type: Boolean, default: true }
 }, {
     timestamps: true
 });
 
-module.exports = Session;
+module.exports = mongoose.model('Session', sessionSchema);

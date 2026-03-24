@@ -1,33 +1,60 @@
 const fs   = require('fs');
 const path = require('path');
+const geminiService = require('../services/geminiService');
 
 /**
  * AI Medical Report Analysis Controller
- * Uses rule-based lab value analysis (no OCR / Python dependency).
- * The frontend sends extracted text; we analyze it for abnormal values.
+ * Uses Gemini 1.5 Multimodal for depth, with a rule-based fallback.
  */
 const aiController = {
 
     async analyzeReport(req, res) {
+        let imagePath = null;
         try {
             if (!req.file) {
-                return res.status(400).json({ success: false, message: 'No file uploaded' });
+                // If no file but there's text (symptom-based analysis)
+                const reportText = req.body.text || '';
+                const analysis = analyzeReportText(reportText);
+                return res.json({ success: true, from: 'logic', data: analysis });
             }
 
-            // Clean up uploaded file after receiving
-            const imagePath = req.file.path;
-            fs.unlink(imagePath, (err) => {
-                if (err) console.error('File cleanup error:', err);
-            });
+            imagePath = req.file.path;
 
-            // The frontend sends any extracted text in the request body
-            const reportText = req.body.text || '';
-            const analysis   = analyzeReportText(reportText);
+            // Attempt advanced Gemini Analysis
+            try {
+                const geminiAnalysis = await geminiService.analyzeMedicalReport(imagePath);
+                
+                // Cleanup file after successful analysis
+                fs.unlink(imagePath, (err) => { if (err) console.error('Cleanup error:', err); });
+                
+                return res.json({ 
+                    success: true, 
+                    from: 'gemini', 
+                    data: geminiAnalysis 
+                });
+            } catch (geminiError) {
+                console.error('Gemini failed, falling back to rule-based logic:', geminiError.message);
+                
+                // Fallback: Continue to rule-based analysis if Gemini fails
+                const reportText = req.body.text || '';
+                const analysis = analyzeReportText(reportText);
+                
+                // Cleanup file
+                fs.unlink(imagePath, (err) => { if (err) console.error('Cleanup error:', err); });
 
-            res.json({ success: true, data: analysis });
+                return res.json({ 
+                    success: true, 
+                    from: 'fallback-logic', 
+                    data: analysis,
+                    note: 'Advanced AI analysis unavailable. Using standard processing.'
+                });
+            }
 
         } catch (error) {
             console.error('Analysis error:', error);
+            if (imagePath && fs.existsSync(imagePath)) {
+                fs.unlink(imagePath, (err) => { if (err) console.error('Cleanup error:', err); });
+            }
             res.status(500).json({ success: false, message: 'Report analysis failed.' });
         }
     }
