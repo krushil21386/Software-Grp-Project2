@@ -11,7 +11,8 @@ const MedicalRecords = () => {
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        const res = await authFetch('http://localhost:5000/api/appointments/my-appointments');
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await authFetch(`${backendUrl}/api/appointments/my-appointments`);
         const data = await res.json();
         if (data.success) {
           setRecords(data.completed || []);

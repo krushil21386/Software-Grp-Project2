@@ -169,13 +169,14 @@ const MedicineAI = () => {
       
       // Provide more helpful error messages
       let errorMessage = "Failed to analyze. Please try again.";
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       
       if (error.message === 'BACKEND_UNAVAILABLE') {
-        errorMessage = "Backend server is not running. Please start the backend server for full OCR analysis, or use symptom-based analysis without uploading a file.";
+        errorMessage = `Backend server is not running. Please start the backend server for full OCR analysis, or use symptom-based analysis without uploading a file.`;
       } else if (error.message === 'BACKEND_TIMEOUT') {
         errorMessage = "Backend server timed out. Please check if the server is running and try again.";
       } else if (error.message.includes('Failed to fetch')) {
-        errorMessage = "Cannot connect to backend server. Please ensure the backend server is running on port 5000.";
+        errorMessage = `Cannot connect to backend server at ${backendUrl}. Please ensure the backend server is running.`;
       }
       
       alert(errorMessage);
@@ -195,7 +196,7 @@ const MedicineAI = () => {
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>📄 Upload Medical Report (Optional - Uses DeepSeek-OCR-2)</label>
+          <label className={styles.label}>📄 Upload Medical Report (Optional - Uses Hugging Face)</label>
           <input
             type="file"
             accept="image/*"
@@ -203,7 +204,7 @@ const MedicineAI = () => {
             className={styles.input}
           />
           <small style={{ color: '#cbd5e0', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-            Upload a clear image of your medical report. Gemini 1.5 Flash will extract text, identify diseases, and suggest medicines automatically.
+            Upload a clear image of your medical report. Our Hugging Face AI will extract text, identify diseases, and suggest medicines automatically.
           </small>
 
           {imagePreview && (
@@ -288,8 +289,8 @@ const MedicineAI = () => {
           )}
           
           {results.fromReport && (
-            <div className={styles.warningBox} style={{ backgroundColor: 'rgba(220, 20, 60, 0.2)', color: '#ffffff', borderColor: '#DC143C', border: '2px solid rgba(220, 20, 60, 0.5)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-              <h3 style={{ color: '#DC143C', marginBottom: '16px', fontSize: '24px' }}>📋 {results.from === 'gemini' ? 'Gemini 1.5 Pro' : 'DeepSeek-OCR-2'} Analysis</h3>
+            <div className={styles.warningBox} style={{ backgroundColor: '#ffffff', color: 'var(--color-text-primary)', borderColor: '#DC143C', border: '2px solid #DC143C', borderRadius: '16px', padding: '24px', marginBottom: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
+              <h3 style={{ color: '#DC143C', marginBottom: '16px', fontSize: '24px' }}>📋 {results.from === 'huggingface' ? 'Hugging Face AI' : 'AI Analysis'} Analysis</h3>
               
               {results.identifiedDiseases && results.identifiedDiseases.length > 0 && (
                 <div style={{ marginBottom: '16px' }}>
@@ -313,7 +314,7 @@ const MedicineAI = () => {
               )}
               
               <p style={{ marginBottom: '12px' }}>
-                <strong style={{ color: '#DC143C' }}>Overall Assessment:</strong> {results.extractedDisease}
+                <strong style={{ color: '#DC143C' }}>Overall Assessment:</strong> <span style={{ color: '#ef4444', fontWeight: '600' }}>{results.extractedDisease}</span>
               </p>
 
               {results.diagnosisReport && results.diagnosisReport.findings.length > 0 && (
@@ -337,22 +338,22 @@ const MedicineAI = () => {
 
           {results.extractedValues && results.extractedValues.length > 0 && (
             <div className={styles.tableContainer} style={{ 
-              margin: '20px 0', 
+              margin: '32px 0', 
               overflowX: 'auto',
-              background: 'linear-gradient(150deg, rgba(30, 64, 175, 0.4), rgba(15, 23, 42, 0.9))',
-              backdropFilter: 'blur(16px)',
+              background: '#ffffff',
               borderRadius: '16px',
               padding: '24px',
-              border: '1px solid rgba(148, 163, 184, 0.25)'
+              border: '1px solid var(--color-border)',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08)'
             }}>
-              <h3 style={{ marginBottom: '16px', color: '#DC143C', fontSize: '20px' }}>🔬 Lab Results ({results.from === 'gemini' ? 'Gemini Extracted' : 'DeepSeek Extracted'})</h3>
+              <h3 style={{ marginBottom: '16px', color: '#DC143C', fontSize: '20px' }}>🔬 Lab Results ({results.from === 'huggingface' ? 'AI Extracted' : 'Extracted'})</h3>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                 <thead>
-                  <tr style={{ background: 'rgba(15, 23, 42, 0.6)', textAlign: 'left' }}>
-                    <th style={{ padding: '12px', border: '1px solid rgba(148, 163, 184, 0.3)', color: '#DC143C' }}>Test Name</th>
-                    <th style={{ padding: '12px', border: '1px solid rgba(148, 163, 184, 0.3)', color: '#DC143C' }}>Value</th>
-                    <th style={{ padding: '12px', border: '1px solid rgba(148, 163, 184, 0.3)', color: '#DC143C' }}>Normal Range</th>
-                    <th style={{ padding: '12px', border: '1px solid rgba(148, 163, 184, 0.3)', color: '#DC143C' }}>Status</th>
+                  <tr style={{ background: 'rgba(220, 20, 60, 0.05)', textAlign: 'left' }}>
+                    <th style={{ padding: '16px 12px', borderBottom: '2px solid var(--color-border)', color: '#DC143C', fontWeight: '700' }}>Test Name</th>
+                    <th style={{ padding: '16px 12px', borderBottom: '2px solid var(--color-border)', color: '#DC143C', fontWeight: '700' }}>Value</th>
+                    <th style={{ padding: '16px 12px', borderBottom: '2px solid var(--color-border)', color: '#DC143C', fontWeight: '700' }}>Normal Range</th>
+                    <th style={{ padding: '16px 12px', borderBottom: '2px solid var(--color-border)', color: '#DC143C', fontWeight: '700' }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -363,11 +364,11 @@ const MedicineAI = () => {
                     if (item.value > item.range.max) { statusColor = '#ef4444'; statusText = 'High'; }
 
                     return (
-                      <tr key={idx} style={{ background: statusText !== 'Normal' ? 'rgba(239, 68, 68, 0.1)' : 'transparent' }}>
-                        <td style={{ padding: '12px', border: '1px solid rgba(148, 163, 184, 0.3)', color: '#e2e8f0' }}>{item.testName}</td>
-                        <td style={{ padding: '12px', border: '1px solid rgba(148, 163, 184, 0.3)', color: '#e2e8f0', fontWeight: '600' }}>{item.value} {item.units}</td>
-                        <td style={{ padding: '12px', border: '1px solid rgba(148, 163, 184, 0.3)', color: '#cbd5e0' }}>{item.range.min} - {item.range.max} {item.units}</td>
-                        <td style={{ padding: '12px', border: '1px solid rgba(148, 163, 184, 0.3)', color: statusColor, fontWeight: 'bold' }}>{statusText}</td>
+                      <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)', background: statusText !== 'Normal' ? 'rgba(239, 68, 68, 0.05)' : 'transparent' }}>
+                        <td style={{ padding: '14px 12px', color: 'var(--color-text-primary)', fontWeight: '500' }}>{item.testName}</td>
+                        <td style={{ padding: '14px 12px', color: 'var(--color-text-primary)', fontWeight: '700' }}>{item.value} {item.units}</td>
+                        <td style={{ padding: '14px 12px', color: 'var(--color-text-muted)' }}>{item.range.min} - {item.range.max} {item.units}</td>
+                        <td style={{ padding: '14px 12px', color: statusColor, fontWeight: '800' }}>{statusText}</td>
                       </tr>
                     );
                   })}
@@ -482,7 +483,7 @@ const MedicineAI = () => {
           )}
 
           <div className={styles.disclaimer}>
-            <p>{results.disclaimer}</p>
+            <p><strong>Note:</strong> <span style={{ fontWeight: '600' }}>{results.disclaimer}</span></p>
           </div>
 
           {results.extractedText && (

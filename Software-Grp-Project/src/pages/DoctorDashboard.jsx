@@ -29,7 +29,8 @@ const DoctorDashboard = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const res = await authFetch('http://localhost:5000/api/appointments/my-appointments');
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await authFetch(`${backendUrl}/api/appointments/my-appointments`);
         const data = await res.json();
         if (data.success) {
           setUpcomingAppointments(data.upcoming || []);
@@ -56,7 +57,8 @@ const DoctorDashboard = () => {
     const reason = window.prompt('Please provide a reason for cancellation (this will be emailed to the patient):');
     if (reason !== null) {
       try {
-        const response = await authFetch(`http://localhost:5000/api/appointments/${appointmentId}/reject`, {
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const response = await authFetch(`${backendUrl}/api/appointments/${appointmentId}/reject`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reason: reason || 'Not provided' })
@@ -83,7 +85,8 @@ const DoctorDashboard = () => {
     }
     
     try {
-        const response = await authFetch(`http://localhost:5000/api/appointments/${rescheduleModal.appointmentId}/reschedule`, {
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const response = await authFetch(`${backendUrl}/api/appointments/${rescheduleModal.appointmentId}/reschedule`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -106,7 +109,8 @@ const DoctorDashboard = () => {
 
   const handleCompleteAppointment = async (appointmentId) => {
     try {
-      const response = await authFetch(`http://localhost:5000/api/appointments/${appointmentId}/complete`, {
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await authFetch(`${backendUrl}/api/appointments/${appointmentId}/complete`, {
         method: 'PUT',
       });
       if (response.ok) {

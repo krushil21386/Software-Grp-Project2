@@ -134,7 +134,10 @@ export const analyzeMedicalReport = async (file) => {
       controller.abort();
     }, 120000); // 120 second (2 minute) timeout for OCR processing
 
-    const response = await fetch('http://localhost:5000/api/ai/analyze', {
+    // Get backend URL from environment or default to localhost
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    
+    const response = await fetch(`${backendUrl}/api/ai/analyze`, {
       method: 'POST',
       body: formData,
       signal: controller.signal,

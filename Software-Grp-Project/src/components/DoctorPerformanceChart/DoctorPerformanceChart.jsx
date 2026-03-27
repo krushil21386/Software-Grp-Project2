@@ -12,9 +12,10 @@ const DoctorPerformanceChart = ({ doctorId, doctorName, authFetch }) => {
 
   const fetchStats = async () => {
     try {
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const endpoint = doctorId 
-        ? `http://localhost:5000/api/analytics/doctor/id/${doctorId}`
-        : `http://localhost:5000/api/analytics/doctor/${encodeURIComponent(doctorName)}`;
+        ? `${backendUrl}/api/analytics/doctor/id/${doctorId}`
+        : `${backendUrl}/api/analytics/doctor/${encodeURIComponent(doctorName)}`;
       
       const res = await authFetch(endpoint);
       const result = await res.json();
@@ -33,7 +34,8 @@ const DoctorPerformanceChart = ({ doctorId, doctorName, authFetch }) => {
     fetchStats();
 
     // Connect to Socket.io for real-time updates
-    const socket = io('http://localhost:5000');
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const socket = io(backendUrl);
 
     socket.on('analytics_update', (payload) => {
       // Only refresh if the update belongs to this doctor or is global

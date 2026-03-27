@@ -37,7 +37,8 @@ const ProfileImageUpload = ({ size = 100 }) => {
 
       try {
         // Send to backend
-        const res = await authFetch('http://localhost:5000/api/auth/profile', {
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await authFetch(`${backendUrl}/api/auth/profile`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ profileImage: base64String })

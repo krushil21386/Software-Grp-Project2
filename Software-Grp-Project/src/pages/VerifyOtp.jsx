@@ -75,7 +75,8 @@ const VerifyOtp = () => {
     try {
       if (type === 'password-reset') {
         // Call reset-password endpoint
-        const res  = await fetch('http://localhost:5000/api/auth/reset-password', {
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res  = await fetch(`${backendUrl}/api/auth/reset-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, otp: fullOtp, newPassword })

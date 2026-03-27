@@ -4,7 +4,7 @@ const geminiService = require('../services/geminiService');
 
 /**
  * AI Medical Report Analysis Controller
- * Uses Gemini 1.5 Multimodal for depth, with a rule-based fallback.
+ * Uses Hugging Face (OCR + LLM) for depth, with a rule-based fallback.
  */
 const aiController = {
 
@@ -20,9 +20,9 @@ const aiController = {
 
             imagePath = req.file.path;
 
-            // Attempt advanced Gemini Analysis
+            // Use Gemini for multimodal analysis (OCR + LLM)
             try {
-                const geminiAnalysis = await geminiService.analyzeMedicalReport(imagePath);
+                const aiAnalysis = await geminiService.analyzeMedicalReport(imagePath);
                 
                 // Cleanup file after successful analysis
                 fs.unlink(imagePath, (err) => { if (err) console.error('Cleanup error:', err); });
@@ -30,10 +30,10 @@ const aiController = {
                 return res.json({ 
                     success: true, 
                     from: 'gemini', 
-                    data: geminiAnalysis 
+                    data: aiAnalysis 
                 });
-            } catch (geminiError) {
-                console.error('Gemini failed, falling back to rule-based logic:', geminiError.message);
+            } catch (aiError) {
+                console.error('Gemini analysis failed, falling back to rule-based logic:', aiError.message);
                 
                 // Fallback: Continue to rule-based analysis if Gemini fails
                 const reportText = req.body.text || '';

@@ -49,7 +49,8 @@ const AdminDashboard = () => {
   const fetchAuditLogs = async () => {
     setLogsLoading(true);
     try {
-      const res = await authFetch('http://localhost:5000/api/audit/logs?limit=20');
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const res = await authFetch(`${backendUrl}/api/audit/logs?limit=20`);
       const data = await res.json();
       if (data.success) {
         setAuditLogs(data.logs);
@@ -63,7 +64,8 @@ const AdminDashboard = () => {
 
   const handleDownloadLogs = async () => {
     try {
-      const response = await authFetch('http://localhost:5000/api/audit/export');
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await authFetch(`${backendUrl}/api/audit/export`);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');

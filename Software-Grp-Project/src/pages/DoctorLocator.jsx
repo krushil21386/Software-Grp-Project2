@@ -55,7 +55,8 @@ const DoctorLocator = () => {
   const mapRef = useRef(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/auth/doctors')
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    fetch(`${backendUrl}/api/auth/doctors`)
       .then(res => res.json())
       .then(data => {
         if (data.success) setDbDoctors(data.doctors);

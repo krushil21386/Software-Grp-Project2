@@ -24,7 +24,8 @@ const BookAppointmentPage = () => {
   const [dbDoctors, setDbDoctors] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/auth/doctors')
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    fetch(`${backendUrl}/api/auth/doctors`)
       .then(res => res.json())
       .then(data => {
         if (data.success) setDbDoctors(data.doctors);
@@ -155,7 +156,8 @@ const BookAppointmentPage = () => {
     };
 
     try {
-      const response = await authFetch('http://localhost:5000/api/appointments/book-appointment', {
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await authFetch(`${backendUrl}/api/appointments/book-appointment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

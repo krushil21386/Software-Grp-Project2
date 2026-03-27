@@ -22,18 +22,19 @@ const DoctorAvailability = () => {
   });
 
   useEffect(() => {
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const fetchData = async () => {
       try {
         setLoading(true);
         // Fetch Availability
-        const availRes = await authFetch('http://localhost:5000/api/doctors/availability');
+        const availRes = await authFetch(`${backendUrl}/api/doctors/availability`);
         const availData = await availRes.json();
         if (availData.success && availData.availability) {
           setAvailability(availData.availability);
         }
 
         // Fetch Appointments
-        const apptRes = await authFetch('http://localhost:5000/api/appointments/my-appointments');
+        const apptRes = await authFetch(`${backendUrl}/api/appointments/my-appointments`);
         const apptData = await apptRes.json();
         if (apptData.success) {
           setAppointments(apptData.upcoming || []);
@@ -51,7 +52,8 @@ const DoctorAvailability = () => {
   const handleSaveSettings = async () => {
     try {
       setSaveLoading(true);
-      const res = await authFetch('http://localhost:5000/api/doctors/availability', {
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const res = await authFetch(`${backendUrl}/api/doctors/availability`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ schedule: availability })

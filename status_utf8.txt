@@ -1,0 +1,27 @@
+﻿ M Software-Grp-Project/src/components/DoctorPerformanceChart/DoctorPerformanceChart.jsx
+ M Software-Grp-Project/src/components/ProfileImageUpload/ProfileImageUpload.jsx
+ M Software-Grp-Project/src/contexts/AuthContext.jsx
+ M Software-Grp-Project/src/pages/AdminDashboard.jsx
+ M Software-Grp-Project/src/pages/Appointments.jsx
+ M Software-Grp-Project/src/pages/BookAppointmentPage.jsx
+ M Software-Grp-Project/src/pages/DoctorAvailability.jsx
+ M Software-Grp-Project/src/pages/DoctorDashboard.jsx
+ M Software-Grp-Project/src/pages/DoctorLocator.jsx
+ M Software-Grp-Project/src/pages/DoctorProfile.jsx
+ M Software-Grp-Project/src/pages/MedicalRecords.jsx
+ M Software-Grp-Project/src/pages/MedicineAI.jsx
+ M Software-Grp-Project/src/pages/MedicineAI.module.css
+ M Software-Grp-Project/src/pages/PatientDashboard.jsx
+ M Software-Grp-Project/src/pages/VerifyOtp.jsx
+ M Software-Grp-Project/src/services/api.js
+ M Software-Grp-Project/src/utils/medicineAI.js
+ M backend/.env.example
+ M backend/package-lock.json
+ M backend/package.json
+ M backend/src/controllers/aiController.js
+ M backend/src/services/geminiService.js
+?? backend/check-gemini-v2.js
+?? backend/check-gemini.js
+?? backend/check-hf-models.js
+?? backend/src/services/huggingFaceService.js
+?? status_utf8.txt

@@ -2,7 +2,8 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 
 const AuthContext = createContext(null);
 
-const API_BASE = 'http://localhost:5000/api/auth';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${BACKEND_URL}/api/auth`;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser]         = useState(null);
@@ -76,7 +77,7 @@ export const AuthProvider = ({ children }) => {
 
   // ── Verify MFA ──────────────────────────────────────────
   const verifyMfa = async (email, otp) => {
-    const res = await fetch('http://localhost:5000/api/auth/verify-mfa', {
+    const res = await fetch(`${BACKEND_URL}/api/auth/verify-mfa`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp })

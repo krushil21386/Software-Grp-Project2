@@ -12,7 +12,8 @@ const Appointments = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const res = await authFetch('http://localhost:5000/api/appointments/my-appointments');
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await authFetch(`${backendUrl}/api/appointments/my-appointments`);
         const data = await res.json();
         if (data.success) {
           const allApts = [
@@ -38,7 +39,8 @@ const Appointments = () => {
   const handleCancelAppointment = async (appointmentId) => {
     if (window.confirm('Are you sure you want to cancel this appointment?')) {
       try {
-        const response = await authFetch(`http://localhost:5000/api/appointments/${appointmentId}/reject`, {
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const response = await authFetch(`${backendUrl}/api/appointments/${appointmentId}/reject`, {
           method: 'PUT',
         });
         if (response.ok) {
