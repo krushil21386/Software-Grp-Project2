@@ -35,8 +35,11 @@ jobs:
         working-directory: Software-Grp-Project
 
       - name: Run frontend tests
-        run: npx cypress run
-        working-directory: Software-Grp-Project
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: Software-Grp-Project
+          start: npm run dev
+          wait-on: 'http://localhost:5173'
 
       - name: Build frontend
         run: npm run build
