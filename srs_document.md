@@ -277,41 +277,75 @@ sequenceDiagram
 ```
 
 ### 8.3 Data Flow Diagram (Level 1)
+The following Level 1 DFD breaks down the Medicare Plus system into its core functional processes, illustrating how data flows between external entities, major processes, and persistent data stores.
+
+> [!NOTE]
+> **Docker Inclusion Policy**: This DFD focuses on the **logical data flow** of the application. Infrastructure components like **Docker** are not included here as they pertain to the physical deployment layer and container orchestration rather than the logical movement of system information.
+
 ```mermaid
 graph TD
+    classDef process fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef store fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+
     subgraph "External Entities"
-        Patient((Patient))
-        Doctor((Doctor))
-        Admin((Admin))
+        P((Patient)):::external
+        D((Doctor)):::external
+        A((Admin)):::external
     end
+
     subgraph "Processes"
-        P1[1.0 Authentication & Identity]
-        P2[2.0 Appointment Management]
-        P3[3.0 AI Medical Analysis]
-        P4[4.0 Operational Analytics]
+        P1[1.0 Identity & Access Management]:::process
+        P2[2.0 Clinical Scheduling & Appointments]:::process
+        P3[3.0 Medical Records & AI Pipeline]:::process
+        P4[4.0 Pharmacy & Inventory Service]:::process
+        P5[5.0 Operational Analytics & Audit]:::process
     end
+
     subgraph "Data Stores"
-        D1[(MongoDB: Users & Auth)]
-        D2[(MongoDB: Appointments)]
-        D3[(MongoDB: Records & Logs)]
+        DS1[(D1: User & Auth Store)]:::store
+        DS2[(D2: Appointment Store)]:::store
+        DS3[(D3: Medical Records Store)]:::store
+        DS4[(D4: Inventory & Orders Store)]:::store
+        DS5[(D5: Audit & Activity Logs)]:::store
     end
-    subgraph "External Services"
-        Gemini[Google Gemini API]
+
+    subgraph "External Systems"
+        GAI[Google Gemini API]:::external
+        SMTP[Email Service]:::external
     end
-    Patient -->|Credentials| P1
-    Doctor -->|Credentials| P1
-    P1 <--> D1
-    Patient -->|Booking Data| P2
-    P2 <--> D2
-    P2 -->|Real-time Update| Doctor
-    Patient -->|Medical Reports| P3
-    P3 <--> D3
-    P3 -->|Request Processing| Gemini
-    Gemini -->|Structured Insights| P3
-    Admin -->|Query Logs/Heatmaps| P4
-    P4 <--> D3
-    P4 <--> D2
-    P4 -->|Visual Reports| Admin
+
+    %% Process 1: Auth
+    P -->|Credentials/OTP| P1
+    D -->|Credentials/OTP| P1
+    A -->|Credentials/OTP| P1
+    P1 <--> DS1
+    P1 -->|Send OTP| SMTP
+
+    %% Process 2: Appointments
+    P -->|Booking Request| P2
+    P2 <--> DS2
+    P2 -->|Real-time Notification| D
+    D -->|Availability/Slots| P2
+
+    %% Process 3: Medical Records
+    P -->|Upload Reports| P3
+    P3 <--> DS3
+    P3 -->|Analysis Request| GAI
+    GAI -->|OCR/Diagnosis Info| P3
+    P3 -->|Link Records| P
+
+    %% Process 4: Pharmacy
+    P -->|Search/Order Medicines| P4
+    P4 <--> DS4
+    P4 -->|Update Stock| DS4
+    D -->|E-Prescriptions| P4
+
+    %% Process 5: Analytics
+    A -->|System Queries| P5
+    P5 <--> DS5
+    P5 <--> DS2
+    P5 -->|Reports/Stats| A
 ```
 
 ### 8.4 DFD Level 2: Appointment Management

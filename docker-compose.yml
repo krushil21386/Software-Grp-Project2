@@ -1,28 +1,60 @@
 version: '3.8'
 
 services:
-  backend:
-    build:
-      context: ./backend
-    container_name: hc_backend
+  # Redis service for performance caching
+  redis:
+    image: redis:alpine
+    container_name: hc-redis
     ports:
-      - "5000:5000"
-    env_file:
-      - ./backend/.env
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - "6379:6379"
     restart: always
 
+  # Main Backend API
+  backend-main:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hc-backend-main
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PORT=5001
+    depends_on:
+      - redis
+    restart: always
+
+  # Inventory Microservice
+  backend-inventory:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hc-backend-inventory
+    ports:
+      - "4001:4001"
+    env_file:
+      - ./backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PORT=4001
+      - INVENTORY_PORT=4001
+    command: ["node", "inventory-service/server.js"]
+    depends_on:
+      - redis
+    restart: always
+
+  # Frontend Vite Application
   frontend:
     build:
       context: ./Software-Grp-Project
-    container_name: hc_frontend
+      dockerfile: Dockerfile
+    container_name: hc-frontend
     ports:
       - "5173:5173"
-    volumes:
-      - ./Software-Grp-Project:/app
-      - /app/node_modules
+    env_file:
+      - ./Software-Grp-Project/.env
     depends_on:
-      - backend
+      - backend-main
     restart: always
