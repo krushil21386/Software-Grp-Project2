@@ -7,6 +7,7 @@ export default defineConfig({
     },
     baseUrl: 'http://localhost:5173', // Vite default port
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
-    supportFile: false // Disabled for simplicity in this scaffolding
+    supportFile: false, // Disabled for simplicity in this scaffolding
+    allowCypressEnv: false,
   },
 });
