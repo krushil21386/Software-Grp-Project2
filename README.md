@@ -16,12 +16,19 @@
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![MongoDB](https://img.shields.io/badge/MongoDB-6+-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://mongodb.com)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
+[![Docker](https://img.shields.io/badge/Docker-WIP-f59e0b?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
 [![Socket.io](https://img.shields.io/badge/Socket.io-4.8-010101?style=flat-square&logo=socketdotio&logoColor=white)](https://socket.io)
+
+![Full-Stack](https://img.shields.io/badge/Domain-Full--Stack%20Web-6366f1?style=flat-square&logo=stackblitz&logoColor=white)
+![Cybersecurity](https://img.shields.io/badge/Domain-Cybersecurity-ef4444?style=flat-square&logo=springsecurity&logoColor=white)
+![AI/ML](https://img.shields.io/badge/Domain-AI%20%26%20ML-f97316?style=flat-square&logo=googlegemini&logoColor=white)
+![Real-Time](https://img.shields.io/badge/Domain-Real--Time%20Systems-06b6d4?style=flat-square&logo=socketdotio&logoColor=white)
+![DevOps](https://img.shields.io/badge/Domain-DevOps%20%26%20Cloud%20(WIP)-f59e0b?style=flat-square&logo=docker&logoColor=white)
+![Database](https://img.shields.io/badge/Domain-Database%20Engineering-16a34a?style=flat-square&logo=mongodb&logoColor=white)
 
 ---
 
-[🚀 Quick Start](#-quick-start) · [✨ Features](#-features) · [🛠 Tech Stack](#-tech-stack) · [📁 Structure](#-project-structure) · [🔒 Security](#-security) · [📚 API](#-api-overview)
+[🚀 Quick Start](#-quick-start) · [✨ Features](#-features) · [🌐 Domains](#-project-domains) · [🛠 Tech Stack](#-tech-stack) · [📁 Structure](#-project-structure) · [🔒 Security](#-security) · [📚 API](#-api-overview)
 
 </div>
 
@@ -32,6 +39,115 @@
 **Medicare Plus** is a comprehensive full-stack healthcare platform that streamlines appointment booking, medical record management, and AI-powered medical report analysis. The system facilitates seamless interaction between **patients**, **doctors**, and **administrators** with real-time synchronization.
 
 > 🏥 Book appointments · 🤖 AI-powered report analysis · 📋 Manage medical records · ⚡ Real-time notifications
+
+---
+
+## 🌐 Project Domains
+
+This project spans multiple computer science disciplines — built as a production-grade system, not just a student prototype.
+
+<table>
+<tr>
+<td align="center" width="25%">
+
+### 🖥 Full-Stack Web Development
+
+</td>
+<td width="75%">
+
+End-to-end JavaScript application using **React 19** on the frontend and **Express 5 + Node.js 18** on the backend. Follows a clean separation of concerns: REST API layer, business logic controllers, Mongoose ODM for data modeling, and a component-driven UI with Vite as the build toolchain. Covers SPA architecture, routing, state management via Context API, custom hooks, and responsive layouts with TailwindCSS.
+
+**Skills demonstrated:** REST API design · SPA development · ODM/ORM · Component architecture · Build tooling
+
+</td>
+</tr>
+<tr>
+<td align="center">
+
+### 🔐 Cybersecurity
+
+</td>
+<td>
+
+Security is not bolted on — it is baked into every layer. Implements **JWT with refresh token rotation**, **bcryptjs password hashing** (10 rounds), **OTP-based MFA** via email, **account lockdown** after 5 failed login attempts, **Helmet.js** security headers, **CORS enforcement**, and **rate limiting** on sensitive endpoints. Role-Based Access Control (RBAC) enforces minimum privilege across all API routes. Every security event — login, failure, lockout — is written to a structured **audit log** with IP, geolocation, user agent, and severity level.
+
+**Skills demonstrated:** Authentication & authorization · Cryptography · RBAC · Rate limiting · Audit logging · OWASP principles
+
+</td>
+</tr>
+<tr>
+<td align="center">
+
+### 🤖 Artificial Intelligence & ML
+
+</td>
+<td>
+
+Integrates **Google Gemini API** for AI-powered medical lab report analysis — extracting findings, recommendations, and a confidence score from uploaded documents. Pairs this with **DeepSeek-OCR-2** for optical character recognition of handwritten and scanned medical documents, converting unstructured image data into structured, queryable records. Demonstrates real-world LLM API integration, prompt engineering, and multi-modal document processing in a production context.
+
+**Skills demonstrated:** LLM API integration · OCR · Medical NLP · Prompt engineering · Structured output parsing
+
+</td>
+</tr>
+<tr>
+<td align="center">
+
+### ⚡ Real-Time Systems
+
+</td>
+<td>
+
+Uses **Socket.io 4.8** (WebSocket + long-polling fallback) to deliver live appointment notifications, instant dashboard updates, and real-time doctor-patient event broadcasting. Implements event-driven architecture with room-based channels, presence tracking, and guaranteed delivery patterns. The appointment collision detection system also operates in real time — preventing double-bookings across concurrent users without requiring page refreshes.
+
+**Skills demonstrated:** WebSocket protocol · Event-driven architecture · Pub/Sub patterns · Concurrency handling
+
+</td>
+</tr>
+<tr>
+<td align="center">
+
+### 🗄 Database Engineering
+
+</td>
+<td>
+
+Designed a normalized **MongoDB** schema for 8+ collections with carefully placed indexes, unique constraints, and compound query optimization. Mongoose schemas enforce data validation rules at the ODM level (before hitting the DB), while the application layer adds an additional validation pass. Covers document-oriented data modeling, aggregation pipelines for analytics, lifecycle state machines (record statuses), and handling of relational-style references (patientId, doctorId) in a NoSQL context.
+
+**Skills demonstrated:** NoSQL schema design · Indexing & query optimization · Data validation · Aggregation pipelines
+
+</td>
+</tr>
+<tr>
+<td align="center">
+
+### 🐳 DevOps & Cloud *(In Progress)*
+
+</td>
+<td>
+
+Docker configuration files (`docker-compose.yml`, `Dockerfile`) have been written and committed to the repository, demonstrating understanding of multi-service containerization and orchestration concepts. The compose file defines service structure for the frontend, backend, and MongoDB. While full end-to-end Docker deployment is **not yet functional**, the groundwork covers environment-based configuration management, service dependency ordering, and production vs. development separation — skills directly applicable to real-world cloud deployment pipelines.
+
+> ⚠️ Docker files are present but the deployment is incomplete. Use manual startup for running the project.
+
+**Skills demonstrated:** Containerization concepts · Docker Compose structure · Environment management · Service orchestration design
+
+</td>
+</tr>
+<tr>
+<td align="center">
+
+### 📊 Software Engineering
+
+</td>
+<td>
+
+Built following software engineering best practices: modular MVC architecture, middleware pipeline composition, centralized error handling, input sanitization, and comprehensive test coverage (Jest for unit tests, Cypress for E2E — **70%+ coverage**). Includes a formal **SRS (Software Requirements Specification)** document, Git-based version control with 66+ commits, and structured API design with consistent response formats.
+
+**Skills demonstrated:** Software architecture · Testing (unit + E2E) · SRS documentation · Version control · API design
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -220,23 +336,14 @@ cd Software-Grp-Project && npm install
 
 ### 4️⃣ Start the Application
 
+> ⚠️ **Note:** Docker configuration files (`docker-compose.yml`, `Dockerfile`) are present in the repository but Docker deployment is **not fully functional** at this time. Please use the **Manual** method below.
+
 <table>
 <tr>
-<th>🐳 Docker (Recommended)</th>
-<th>🖥 Manual</th>
+<th>🖥 Manual (Recommended)</th>
+<th>🐳 Docker (Work in Progress)</th>
 </tr>
 <tr>
-<td>
-
-```bash
-# From root directory
-docker compose up --build
-
-# Stop
-docker compose down
-```
-
-</td>
 <td>
 
 ```bash
@@ -247,6 +354,19 @@ cd backend && npm run dev
 # Terminal 2 — Frontend
 cd Software-Grp-Project && npm run dev
 # → http://localhost:5173
+```
+
+</td>
+<td>
+
+```bash
+# ⚠️ Docker setup is incomplete — may not work as expected.
+# docker-compose.yml is present but not fully configured.
+
+docker compose up --build  # Not guaranteed to succeed
+
+# Stop
+docker compose down
 ```
 
 </td>
@@ -285,7 +405,7 @@ Software-Grp-Project2/
 │   ├── 📄 .env
 │   └── 📄 package.json
 │
-├── 🐳 docker-compose.yml         ← Docker orchestration
+├── 🚧 docker-compose.yml         ← Docker orchestration (WIP — not fully functional)
 ├── 📄 README.md
 └── 📄 srs_document.md            ← System requirements spec
 ```
@@ -494,7 +614,7 @@ EMAIL_PASS=your-16-char-app-password
 | 6 | **Analytics** | Performance metrics, system stats, security monitoring |
 | 7 | **Database Design** | Schema design, indexes, constraints, query optimization |
 | 8 | **Frontend Integration** | API client, auth context, custom hooks, form handling |
-| 9 | **DevOps** | Docker containerization, Compose orchestration, health checks |
+| 9 | **DevOps** | Docker config files written (`docker-compose.yml`) — deployment incomplete (WIP) |
 | 10 | **Documentation** | Setup guides, architecture docs, SRS document |
 
 ### 📅 Recent Commits
@@ -516,12 +636,18 @@ EMAIL_PASS=your-16-char-app-password
 
 ## 🚀 Deployment
 
+> ⚠️ **Docker deployment is currently a work in progress.** The `docker-compose.yml` file is present in the repository but has not been fully configured or tested. Use the manual method for running the project locally.
+
+**Recommended — Manual:**
 ```bash
-# Production — Docker
-docker compose -f docker-compose.yml up -d
+# Terminal 1
+cd backend && npm run dev
+
+# Terminal 2
+cd Software-Grp-Project && npm run dev
 ```
 
-**Production `.env` checklist:**
+**Production `.env` checklist** *(for when Docker deployment is completed)*:
 ```env
 NODE_ENV=production
 HTTPS=true
@@ -536,6 +662,7 @@ GEMINI_API_KEY=<production-key>
 
 | Status | Feature |
 |--------|---------|
+| 🚧 | Complete Docker containerization & deployment |
 | 🔜 | Mobile app (React Native) |
 | 🔜 | Video consultation feature |
 | 🔜 | Advanced analytics dashboard |
