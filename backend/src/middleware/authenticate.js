@@ -1,5 +1,6 @@
 const authService = require('../services/authService');
 const User = require('../models/User');
+const logger = require('../services/loggerService');
 
 /**
  * JWT authentication middleware.
@@ -8,15 +9,25 @@ const User = require('../models/User');
  */
 const authenticate = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        // --- TOKEN EXTRACTION ---
+        // Prioritize httpOnly cookie, fallback to Authorization header
+        let token = req.cookies.accessToken;
+
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                token = authHeader.split(' ')[1];
+            }
+        }
+
+        if (!token) {
+            logger.warn(`[Auth] No authentication token provided from ${req.ip}`);
             return res.status(401).json({
                 success: false,
                 message: 'Authentication required. Please log in.'
             });
         }
 
-        const token = authHeader.split(' ')[1];
         const decoded = authService.verifyAccessToken(token);
 
         // Fetch fresh user to ensure account is still valid/unlocked

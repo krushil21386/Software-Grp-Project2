@@ -283,6 +283,10 @@
   .recordActions {
     flex-direction: column;
   }
+
+  .medicineRow {
+    flex-direction: column;
+  }
 }
 
 @keyframes pageFadeIn {
@@ -294,4 +298,381 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ─── Search Bar ─── */
+.searchBar {
+  margin-bottom: 28px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  font-size: 15px;
+  background: var(--color-white, #fff);
+  color: var(--color-charcoal, #1e293b);
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: var(--color-crimson, #DC143C);
+}
+
+/* ─── Patient Name (Doctor View) ─── */
+.patientName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-crimson, #DC143C);
+  margin-bottom: 4px;
+}
+
+/* ─── Status Variants ─── */
+.statusReviewed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.statusPending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* ─── Confidence Row ─── */
+.confidenceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--color-text-muted, #64748b);
+}
+
+.confidenceValue {
+  font-weight: 700;
+  color: #10b981;
+}
+
+/* ─── Prescription Card (Doctor View) ─── */
+.rxCard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.medicinePill {
+  display: inline-block;
+  padding: 6px 14px;
+  background: rgba(220, 20, 60, 0.08);
+  color: var(--color-crimson, #DC143C);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rxStatus {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+/* ─── Footer Actions ─── */
+.footerActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.viewLabReport {
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: var(--color-bg-light, #f8fafc);
+  color: var(--color-charcoal, #1e293b);
+  border: 1px solid var(--color-border, #e2e8f0);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.viewLabReport:hover {
+  border-color: var(--color-crimson, #DC143C);
+  color: var(--color-crimson, #DC143C);
+}
+
+.pendingPrescription {
+  font-size: 13px;
+  color: var(--color-text-muted, #94a3b8);
+  font-style: italic;
+}
+
+.summary {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-primary, #334155);
+}
+
+.assessment {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(220, 20, 60, 0.06);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--color-crimson, #DC143C);
+}
+
+.findingsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.findingsList li {
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--color-text-primary, #334155);
+  border-bottom: 1px solid var(--color-border, #f1f5f9);
+}
+
+.findingsList li:last-child {
+  border-bottom: none;
+}
+
+/* ─── Doctor Actions ─── */
+.doctorActions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.editRxBtn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--color-crimson, #DC143C);
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editRxBtn:hover {
+  background: var(--color-crimson-dark, #b91c3c);
+  transform: translateY(-1px);
+}
+
+.uploadLabel {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--color-bg-light, #f8fafc);
+  color: var(--color-charcoal, #1e293b);
+  border: 1px solid var(--color-border, #e2e8f0);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.uploadLabel:hover {
+  border-color: var(--color-crimson, #DC143C);
+  color: var(--color-crimson, #DC143C);
+}
+
+/* ─── Modal ─── */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+.modalHeader h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-charcoal, #1e293b);
+  margin: 0;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--color-text-muted, #94a3b8);
+  line-height: 1;
+}
+
+.modalBody {
+  padding: 24px 28px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted, #64748b);
+  margin-bottom: 10px;
+}
+
+.medicineRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.formInput {
+  flex: 2;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.formInput:focus {
+  border-color: var(--color-crimson, #DC143C);
+}
+
+.formInputSmall {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.formInputSmall:focus {
+  border-color: var(--color-crimson, #DC143C);
+}
+
+.removeRowBtn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.addRowBtn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: none;
+  border: 1px dashed var(--color-border, #cbd5e1);
+  border-radius: 8px;
+  color: var(--color-crimson, #DC143C);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.addRowBtn:hover {
+  background: rgba(220, 20, 60, 0.04);
+}
+
+.formTextarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.formTextarea:focus {
+  border-color: var(--color-crimson, #DC143C);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 28px;
+  border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.cancelBtn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  background: var(--color-bg-light, #f8fafc);
+  color: var(--color-charcoal, #1e293b);
+  border: 1px solid var(--color-border, #e2e8f0);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saveBtn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  background: var(--color-crimson, #DC143C);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.saveBtn:hover {
+  background: var(--color-crimson-dark, #b91c3c);
+}
+
+.saveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

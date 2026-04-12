@@ -5,7 +5,7 @@ const otpService = require('../services/otpService');
 const loggingService = require('../services/loggingService');
 const securityService = require('../services/securityService');
 const { sendLoginOtpEmail, sendSecurityAlertEmail } = require('../services/emailService');
-require('dotenv').config();
+const logger = require('../services/loggerService');
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCK_DURATION_MS = 30 * 60 * 1000; // 30 minutes
@@ -50,7 +50,7 @@ const authController = {
             });
 
         } catch (err) {
-            console.error('Register error:', err);
+            logger.error('Register error:', err);
             res.status(500).json({ success: false, message: 'Registration failed.', error: err.message });
         }
     },
@@ -80,7 +80,7 @@ const authController = {
             res.json({ success: true, message: 'OTP verified.' });
 
         } catch (err) {
-            console.error('Verify OTP error:', err);
+            logger.error('Verify OTP error:', err);
             res.status(500).json({ success: false, message: 'OTP verification failed.' });
         }
     },
@@ -106,7 +106,7 @@ const authController = {
             });
 
         } catch (err) {
-            console.error('Resend OTP error:', err);
+            logger.error('Resend OTP error:', err);
             res.status(500).json({ success: false, message: 'Failed to resend OTP.' });
         }
     },
@@ -183,7 +183,8 @@ const authController = {
                 });
             }
 
-            // Check email verification
+            /* 
+            // Check email verification (KEEP FOR SIGNUP ONLY)
             if (!user.isVerified) {
                 return res.status(403).json({
                     success: false,
@@ -192,14 +193,16 @@ const authController = {
                     email
                 });
             }
+            */
 
-            // --- RISK-BASED MFA CHECK ---
+            // --- RISK-BASED MFA CHECK (DISABLED PER USER REQUEST) ---
             const { location, clientIp } = loggingService.recordLog(req, { 
                 userId: user._id, 
                 action: 'LOGIN_ATTEMPT', 
                 category: 'AUTH' 
             });
 
+            /* 
             const recognized = await securityService.isLocationRecognized(user, location);
             
             if (!recognized) {
@@ -215,15 +218,13 @@ const authController = {
                     location
                 });
             }
-
-            // Location is recognized, update it in background to ensure it stays in history
-            securityService.updateKnownLocation(user._id, location).catch(() => {});
+            */
 
             // --- STANDARD SUCCESSFUL LOGIN ---
             return authController.finalizeLogin(req, res, user, location, clientIp);
 
         } catch (err) {
-            console.error('Login error:', err);
+            logger.error('Login error:', err);
             res.status(500).json({ success: false, message: 'Login failed.' });
         }
     },
@@ -271,14 +272,30 @@ const authController = {
 
         // Optional: Notify user if it's a new location BUT they just verified via MFA
         if (isMfaVerified) {
-             sendSecurityAlertEmail(user, location, clientIp).catch(e => console.error('Alert email fail:', e));
+             sendSecurityAlertEmail(user, location, clientIp).catch(e => logger.error('Alert email fail:', e));
         }
+
+        // --- COOKIE CONFIG ---
+        const isProd = process.env.NODE_ENV === 'production';
+        const cookieOptions = {
+            httpOnly: true,
+            secure: isProd, // Only send over HTTPS in production
+            sameSite: 'Lax', // Protect against CSRF while allowing cross-site navigation
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days (matching refresh token)
+        };
+
+        const accessCookieOptions = {
+            ...cookieOptions,
+            maxAge: 15 * 60 * 1000 // 15 minutes (matching access token)
+        };
+
+        // Set cookies
+        res.cookie('accessToken', accessToken, accessCookieOptions);
+        res.cookie('refreshToken', refreshToken, cookieOptions);
 
         return res.json({
             success: true,
             message: 'Login successful.',
-            accessToken,
-            refreshToken,
             user: authService.sanitizeUser(user)
         });
     },
@@ -317,7 +334,7 @@ const authController = {
             return authController.finalizeLogin(req, res, user, location, clientIp, true);
 
         } catch (err) {
-            console.error('MFA Verify error:', err);
+            logger.error('MFA Verify error:', err);
             res.status(500).json({ success: false, message: 'Verification failed.' });
         }
     },
@@ -327,20 +344,35 @@ const authController = {
     // ─────────────────────────────────────────────
     async refreshToken(req, res) {
         try {
-            const { refreshToken } = req.body;
+            // Read from cookie instead of body
+            const refreshToken = req.cookies.refreshToken;
+            logger.info(`[Auth] Received refresh token request...`);
+
             if (!refreshToken) {
-                return res.status(400).json({ success: false, message: 'Refresh token required.' });
+                return res.status(401).json({ success: false, message: 'Refresh token required.' });
             }
 
             let decoded;
             try {
                 decoded = authService.verifyRefreshToken(refreshToken);
-            } catch {
+                logger.info(`[Auth] Refresh token verified for user ID: ${decoded?.id}`);
+            } catch (jwtErr) {
+                logger.warn(`[Auth] JWT Refresh Token verification failed: ${jwtErr.message}`);
                 return res.status(401).json({ success: false, message: 'Invalid or expired refresh token.' });
             }
 
+            if (!decoded || !decoded.id) {
+                return res.status(401).json({ success: false, message: 'Malformed refresh token payload.' });
+            }
+
             const user = await User.findById(decoded.id);
-            if (!user || user.refreshToken !== refreshToken) {
+            if (!user) {
+                logger.warn(`[Auth] User not found during token refresh: ${decoded.id}`);
+                return res.status(401).json({ success: false, message: 'User no longer exists.' });
+            }
+
+            if (user.refreshToken !== refreshToken) {
+                logger.warn(`[Auth] Refresh token mismatch for user: ${user.email}`);
                 return res.status(401).json({ success: false, message: 'Refresh token revoked or invalid.' });
             }
 
@@ -348,7 +380,14 @@ const authController = {
             const session = await Session.findOne({
                 userId: user._id, refreshToken, isActive: true
             });
-            if (!session || session.expiresAt < new Date()) {
+            
+            if (!session) {
+                logger.warn(`[Auth] Active session not found for token refresh: ${user.email}`);
+                return res.status(401).json({ success: false, message: 'Session no longer active.' });
+            }
+
+            if (session.expiresAt < new Date()) {
+                logger.warn(`[Auth] Session expired for user: ${user.email}`);
                 return res.status(401).json({ success: false, message: 'Session expired. Please log in again.' });
             }
 
@@ -356,14 +395,29 @@ const authController = {
             const tokenPayload = { id: user._id, email: user.email, role: user.role };
             const newAccessToken = authService.generateAccessToken(tokenPayload);
 
+            logger.info(`[Auth] Successfully issued new access token for: ${user.email}`);
+
+            // Update the access cookie
+            const isProd = process.env.NODE_ENV === 'production';
+            res.cookie('accessToken', newAccessToken, {
+                httpOnly: true,
+                secure: isProd,
+                sameSite: 'Lax',
+                maxAge: 15 * 60 * 1000
+            });
+
             res.json({
                 success: true,
-                accessToken: newAccessToken
+                message: 'Token refreshed.'
             });
 
         } catch (err) {
-            console.error('Refresh token error:', err);
-            res.status(500).json({ success: false, message: 'Token refresh failed.' });
+            logger.error('CRITICAL ERROR during Refresh token:', err);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Internal server error during token refresh.',
+                error: process.env.NODE_ENV === 'development' ? err.message : undefined
+            });
         }
     },
 
@@ -372,7 +426,7 @@ const authController = {
     // ─────────────────────────────────────────────
     async logout(req, res) {
         try {
-            const { refreshToken } = req.body;
+            const refreshToken = req.cookies.refreshToken;
 
             if (refreshToken) {
                 // Invalidate session
@@ -388,10 +442,14 @@ const authController = {
                 );
             }
 
+            // Clear cookies
+            res.clearCookie('accessToken');
+            res.clearCookie('refreshToken');
+
             res.json({ success: true, message: 'Logged out successfully.' });
 
         } catch (err) {
-            console.error('Logout error:', err);
+            logger.error('Logout error:', err);
             res.status(500).json({ success: false, message: 'Logout failed.' });
         }
     },
@@ -423,7 +481,7 @@ const authController = {
             });
 
         } catch (err) {
-            console.error('Forgot password error:', err);
+            logger.error('Forgot password error:', err);
             res.status(500).json({ success: false, message: 'Failed to process request.' });
         }
     },
@@ -456,7 +514,7 @@ const authController = {
             res.json({ success: true, message: 'Password reset successfully. Please log in with your new password.' });
 
         } catch (err) {
-            console.error('Reset password error:', err);
+            logger.error('Reset password error:', err);
             res.status(500).json({ success: false, message: 'Password reset failed.' });
         }
     },
@@ -492,7 +550,7 @@ const authController = {
             res.json({ success: true, message: 'Profile updated.', user: authService.sanitizeUser(updated) });
 
         } catch (err) {
-            console.error('Update profile error:', err);
+            logger.error('Update profile error:', err);
             res.status(500).json({ success: false, message: 'Profile update failed.' });
         }
     },
@@ -505,7 +563,7 @@ const authController = {
             const docs = await User.find({ role: 'doctor' }).select('-password -__v');
             res.json({ success: true, doctors: docs.map(d => authService.sanitizeUser(d)) });
         } catch (error) {
-            console.error('getAllDoctors error:', error);
+            logger.error('getAllDoctors error:', error);
             res.status(500).json({ success: false, message: 'Server error fetching doctors' });
         }
     },

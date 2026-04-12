@@ -22,6 +22,13 @@ const availabilitySchema = new mongoose.Schema({
     saturday: { type: dayScheduleSchema, default: { available: false, start: '10:00 AM', end: '2:00 PM' } },
     sunday: { type: dayScheduleSchema, default: { available: false, start: '10:00 AM', end: '2:00 PM' } },
   },
+  specificDates: [{
+    date: { type: String, required: true }, // Format: YYYY-MM-DD
+    start: { type: String },
+    end: { type: String },
+    available: { type: Boolean, default: true },
+    _id: false
+  }],
   updatedAt: {
     type: Date,
     default: Date.now

@@ -2,6 +2,8 @@ const express = require('express');
 const router  = express.Router();
 const authenticate = require('../middleware/authenticate');
 const appointmentController = require('../controllers/appointmentController');
+const validate = require('../middleware/validate');
+const { book, reschedule } = require('../validators/appointmentValidator');
 
 // ─── New authenticated endpoints ─────────────────────────────────────────────
 
@@ -9,7 +11,7 @@ const appointmentController = require('../controllers/appointmentController');
  * POST /api/appointments/book-appointment
  * Books an appointment for the logged-in user + sends confirmation email.
  */
-router.post('/book-appointment', authenticate, appointmentController.bookAppointment);
+router.post('/book-appointment', authenticate, book, validate, appointmentController.bookAppointment);
 
 /**
  * GET /api/appointments/my-appointments
@@ -17,18 +19,25 @@ router.post('/book-appointment', authenticate, appointmentController.bookAppoint
  */
 router.get('/my-appointments', authenticate, appointmentController.getMyAppointments);
 
-// ─── Legacy / generic endpoints (kept for backward compatibility) ─────────────
+/**
+ * GET /api/appointments/heatmap
+ * Returns a 7x24 matrix of appointment density.
+ */
+router.get('/heatmap', authenticate, appointmentController.getHeatmap);
 
-router.post('/',              appointmentController.create);
-router.get('/',               appointmentController.getAll);
-router.get('/:id',            appointmentController.getById);
-router.put('/:id',            appointmentController.update);
-router.delete('/:id',         appointmentController.delete);
+// ─── Legacy / generic endpoints (kept for backward compatibility) ─────────────
+// All routes now require authentication for security
+
+router.post('/',              authenticate, book, validate, appointmentController.create);
+router.get('/',               authenticate, appointmentController.getAll);
+router.get('/:id',            authenticate, appointmentController.getById);
+router.put('/:id',            authenticate, appointmentController.update);
+router.delete('/:id',         authenticate, appointmentController.delete);
 
 // Specialized status routes
-router.put('/:id/accept',     appointmentController.updateStatus);
-router.put('/:id/reject',     appointmentController.updateStatus);
-router.put('/:id/complete',   appointmentController.updateStatus);
-router.put('/:id/reschedule', appointmentController.reschedule);
+router.put('/:id/accept',     authenticate, appointmentController.updateStatus);
+router.put('/:id/reject',     authenticate, appointmentController.updateStatus);
+router.put('/:id/complete',   authenticate, appointmentController.updateStatus);
+router.put('/:id/reschedule', authenticate, reschedule, validate, appointmentController.reschedule);
 
 module.exports = router;

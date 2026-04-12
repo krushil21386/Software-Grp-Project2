@@ -46,7 +46,7 @@ const Navbar = () => {
           <div className={styles.logoIcon}>+</div>
           <h2>MediCare Plus</h2>
         </div>
-        
+
         <div className={styles.navActions}>
           {isAuthenticated ? (
             <>
@@ -63,8 +63,8 @@ const Navbar = () => {
               <button onClick={goToLogin}>Login / Sign Up →</button>
             </div>
           )}
-          
-          <button 
+
+          <button
             className={styles.menuButton}
             onClick={toggleSidebar}
             aria-label="Toggle menu"
@@ -79,7 +79,7 @@ const Navbar = () => {
       </nav>
 
       {/* Sidebar Overlay */}
-      <div 
+      <div
         className={`${styles.overlay} ${isSidebarOpen ? styles.overlayOpen : ''}`}
         onClick={() => setIsSidebarOpen(false)}
       ></div>
@@ -88,7 +88,7 @@ const Navbar = () => {
       <div className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
         <div className={styles.sidebarHeader}>
           <h3>Navigation</h3>
-          <button 
+          <button
             className={styles.closeButton}
             onClick={() => setIsSidebarOpen(false)}
             aria-label="Close menu"
@@ -96,39 +96,49 @@ const Navbar = () => {
             ×
           </button>
         </div>
-        
+
         <div className={styles.sidebarLinks}>
           <Link to="/" onClick={() => handleLinkClick('/')}>Home</Link>
-          <Link to="/hospitals" onClick={() => handleLinkClick('/hospitals')}>Hospitals</Link>
-          <Link to="/doctor-locator" onClick={() => handleLinkClick('/doctor-locator')}>Find Doctors</Link>
-          <Link to="/medicine-ai" onClick={() => handleLinkClick('/medicine-ai')}>AI Medicine Suggestion</Link>
-          <Link to="/book-appointment" onClick={() => handleLinkClick('/book-appointment')}>Book Appointment</Link>
-          <Link to="/emergency-services" onClick={() => handleLinkClick('/emergency-services')}>Emergency Services</Link>
-          <Link to="/medicine-delivery" onClick={() => handleLinkClick('/medicine-delivery')}>Medicine Delivery</Link>
-          {isAuthenticated && (
+
+          {/* Shared: visible to everyone when NOT logged in, or to patients */}
+          {(!isAuthenticated || user?.role === 'patient') && (
             <>
-              {user?.role === 'patient' && (
-                <>
-                  <Link to="/patient-dashboard" onClick={() => handleLinkClick('/patient-dashboard')}>Patient Dashboard</Link>
-                  <Link to="/appointments" onClick={() => handleLinkClick('/appointments')}>My Appointments</Link>
-                  <Link to="/medical-records" onClick={() => handleLinkClick('/medical-records')}>Medical Records</Link>
-                </>
-              )}
-              {user?.role === 'doctor' && (
-                <>
-                  <Link to="/doctor-dashboard" onClick={() => handleLinkClick('/doctor-dashboard')}>Doctor Dashboard</Link>
-                  <Link to="/doctor-availability" onClick={() => handleLinkClick('/doctor-availability')}>📅 Availability Heatmap</Link>
-                  <Link to="/appointments" onClick={() => handleLinkClick('/appointments')}>My Appointments</Link>
-                  <Link to="/medical-records" onClick={() => handleLinkClick('/medical-records')}>Medical Records</Link>
-                </>
-              )}
-              {user?.role === 'admin' && (
-                <Link to="/admin-dashboard" onClick={() => handleLinkClick('/admin-dashboard')}>Admin Dashboard</Link>
-              )}
+              <Link to="/hospitals" onClick={() => handleLinkClick('/hospitals')}>Hospitals</Link>
+              <Link to="/doctor-locator" onClick={() => handleLinkClick('/doctor-locator')}>Find Doctors</Link>
+              <Link to="/book-appointment" onClick={() => handleLinkClick('/book-appointment')}>Book Appointment</Link>
+              <Link to="/medicine-delivery" onClick={() => handleLinkClick('/medicine-delivery')}>Medicine Delivery</Link>
             </>
           )}
+
+          {/* AI Medicine — useful for both patients and doctors */}
+          <Link to="/medicine-ai" onClick={() => handleLinkClick('/medicine-ai')}>AI Medicine Suggestion</Link>
+
+          {/* Patient-only pages */}
+          {isAuthenticated && user?.role === 'patient' && (
+            <>
+              <Link to="/health-passport" onClick={() => handleLinkClick('/health-passport')}>Health Passport</Link>
+              <Link to="/patient-dashboard" onClick={() => handleLinkClick('/patient-dashboard')}>Patient Dashboard</Link>
+              <Link to="/appointments" onClick={() => handleLinkClick('/appointments')}>My Appointments</Link>
+              <Link to="/medical-records" onClick={() => handleLinkClick('/medical-records')}>Medical Records</Link>
+            </>
+          )}
+
+          {/* Doctor-only pages */}
+          {isAuthenticated && user?.role === 'doctor' && (
+            <>
+              <Link to="/doctor-dashboard" onClick={() => handleLinkClick('/doctor-dashboard')}>Doctor Dashboard</Link>
+              <Link to="/doctor-availability" onClick={() => handleLinkClick('/doctor-availability')}>Availability Heatmap</Link>
+              <Link to="/appointments" onClick={() => handleLinkClick('/appointments')}>My Appointments</Link>
+              <Link to="/medical-records" onClick={() => handleLinkClick('/medical-records')}>Medical Records</Link>
+            </>
+          )}
+
+          {/* Admin-only */}
+          {isAuthenticated && user?.role === 'admin' && (
+            <Link to="/admin-dashboard" onClick={() => handleLinkClick('/admin-dashboard')}>Admin Dashboard</Link>
+          )}
         </div>
-        
+
         <div className={styles.sidebarFooter}>
           {isAuthenticated ? (
             <button className={styles.sidebarLoginButton} onClick={handleLogout}>

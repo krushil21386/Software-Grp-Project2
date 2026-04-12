@@ -53,10 +53,14 @@ const Login = () => {
         return;
       }
 
-      const from = location.state?.from?.pathname ||
-        (data.user.role === 'doctor' ? '/doctor-dashboard' :
-         data.user.role === 'admin'  ? '/admin-dashboard' : '/patient-dashboard');
-      navigate(from, { replace: true });
+      if (data.success) {
+        const from = location.state?.from?.pathname ||
+          (data.user.role === 'doctor' ? '/doctor-dashboard' :
+           data.user.role === 'admin'  ? '/admin-dashboard' : '/patient-dashboard');
+        navigate(from, { replace: true });
+      } else {
+        setError(data.message || 'Login failed. Please check your credentials.');
+      }
 
     } catch (err) {
       setError(err?.message || 'Login failed. Please check your credentials.');

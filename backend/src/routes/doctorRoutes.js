@@ -1,12 +1,14 @@
 const express = require('express');
 const router  = express.Router();
-const { doctors, hospitals } = require('../data/mockData');
+const User = require('../models/User');
+const Hospital = require('../models/Hospital');
 const authenticate = require('../middleware/authenticate');
 const doctorController = require('../controllers/doctorController');
 
 // Availability Routes (Must be BEFORE /:id)
 router.get('/availability', authenticate, doctorController.getAvailability);
 router.put('/availability', authenticate, doctorController.updateAvailability);
+router.patch('/availability/date', authenticate, doctorController.updateDateAvailability);
 
 function toRad(deg) { return deg * (Math.PI / 180); }
 
@@ -19,44 +21,81 @@ function haversine(lat1, lng1, lat2, lng2) {
 }
 
 // GET /api/doctors
-router.get('/', (req, res) => {
-    const { hospitalId, specialty, departmentId } = req.query;
-    let result = [...doctors];
-    if (hospitalId)   result = result.filter(d => d.hospitalId   === parseInt(hospitalId));
-    if (specialty)    result = result.filter(d => d.specialty.toLowerCase() === specialty.toLowerCase());
-    if (departmentId) result = result.filter(d => d.departmentId === parseInt(departmentId));
-    res.json({ success: true, doctors: result });
+router.get('/', async (req, res) => {
+    try {
+        const { specialty } = req.query;
+        let filter = { role: 'doctor' };
+        
+        if (specialty) {
+            filter.specialty = { $regex: new RegExp(specialty, 'i') };
+        }
+
+        const doctors = await User.find(filter).select('-password').populate('hospitalId');
+        
+        // Map hospitalId -> hospital for UI compatibility
+        const formattedDoctors = doctors.map(d => {
+            const obj = d.toObject();
+            obj.hospital = obj.hospitalId || null;
+            return obj;
+        });
+
+        res.json({ success: true, doctors: formattedDoctors });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
 });
 
 // GET /api/doctors/:id
-router.get('/:id', (req, res) => {
-    const doctor = doctors.find(d => d.id === parseInt(req.params.id));
-    if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found' });
-    const hospital = hospitals.find(h => h.id === doctor.hospitalId);
-    res.json({ success: true, doctor: { ...doctor, hospital } });
+router.get('/:id', async (req, res) => {
+    try {
+        const doctor = await User.findOne({ _id: req.params.id, role: 'doctor' })
+            .select('-password')
+            .populate('hospitalId');
+            
+        if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found' });
+        
+        const doctorObj = doctor.toObject();
+        doctorObj.hospital = doctorObj.hospitalId || null;
+        
+        res.json({ success: true, doctor: doctorObj });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
 });
 
 // POST /api/doctors/nearest
-router.post('/nearest', (req, res) => {
-    const { lat, lng, specialty, maxDistance = 100 } = req.body;
-    if (!lat || !lng) return res.status(400).json({ success: false, message: 'lat and lng are required' });
+router.post('/nearest', async (req, res) => {
+    try {
+        const { lat, lng, specialty, maxDistance = 100 } = req.body;
+        if (!lat || !lng) return res.status(400).json({ success: false, message: 'lat and lng are required' });
 
-    let result = doctors.map(doctor => {
-        const hospital = hospitals.find(h => h.id === doctor.hospitalId);
-        if (!hospital) return null;
-        const distance = haversine(lat, lng, hospital.lat, hospital.lng);
-        return {
-            ...doctor,
-            hospital,
-            distance:            parseFloat(distance.toFixed(2)),
-            estimatedTravelTime: Math.ceil((distance / (40 * (1 - hospital.traffic * 0.6))) * 60)
-        };
-    }).filter(d => d && d.distance <= maxDistance);
+        const doctors = await User.find({ role: 'doctor' }).select('-password').populate('hospitalId');
 
-    if (specialty) result = result.filter(d => d.specialty.toLowerCase() === specialty.toLowerCase());
-    result.sort((a, b) => a.distance - b.distance);
+        let result = doctors.map(doctor => {
+            const hospital = doctor.hospitalId; 
+            if (!hospital || !hospital.lat || !hospital.lng) return null;
+            
+            const distance = haversine(lat, lng, hospital.lat, hospital.lng);
+            
+            const obj = doctor.toObject();
+            obj.hospital = hospital; // Use populated hospital
 
-    res.json({ success: true, doctors: result });
+            return {
+                ...obj,
+                distance: parseFloat(distance.toFixed(2)),
+                estimatedTravelTime: Math.ceil((distance / (40 * (1 - hospital.traffic * 0.6))) * 60)
+            };
+        }).filter(d => d && d.distance <= maxDistance);
+
+        if (specialty) {
+            result = result.filter(d => d.specialty.toLowerCase().includes(specialty.toLowerCase()));
+        }
+        result.sort((a, b) => a.distance - b.distance);
+
+        res.json({ success: true, doctors: result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
 });
 
 module.exports = router;

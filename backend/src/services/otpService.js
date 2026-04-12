@@ -1,10 +1,20 @@
 const nodemailer = require('nodemailer');
 const crypto     = require('crypto');
 const OtpToken   = require('../models/OtpToken');
-require('dotenv').config();
 
+/**
+ * Generates a 6-digit OTP.
+ */
 function generateOtp() {
     return crypto.randomInt(100000, 1000000).toString();
+}
+
+/**
+ * Hashes an OTP using SHA-256 for secure storage.
+ * Plain OTP is only sent via email — never stored.
+ */
+function hashOtp(otp) {
+    return crypto.createHash('sha256').update(otp).digest('hex');
 }
 
 function hasRealCredentials() {
@@ -118,24 +128,36 @@ const otpService = {
         return otp;
     },
 
+    /**
+     * Generates an OTP and stores its SHA-256 hash in MongoDB.
+     * The plain OTP is returned for email delivery only — never persisted.
+     */
     async generate(email, type) {
         const otp          = generateOtp();
+        const hashedOtp    = hashOtp(otp);
         const expiryMins   = parseInt(process.env.OTP_EXPIRES_MINUTES, 10) || 10;
         const expiresAt    = new Date(Date.now() + expiryMins * 60 * 1000);
 
+        // Invalidate all previous unused OTPs for this email/type
         await OtpToken.updateMany(
             { email, type, used: false },
             { used: true }
         );
 
-        await OtpToken.create({ email, otp, type, expiresAt });
+        // Store the HASHED OTP — plain text is never saved
+        await OtpToken.create({ email, otp: hashedOtp, type, expiresAt });
         return otp;
     },
 
+    /**
+     * Verifies an OTP by comparing its SHA-256 hash against the stored hash.
+     */
     async verify(email, otp, type = 'registration') {
+        const hashedOtp = hashOtp(otp);
+
         const record = await OtpToken.findOne({
             email,
-            otp,
+            otp: hashedOtp,
             type,
             used: false,
             expiresAt: { $gt: new Date() }

@@ -1,0 +1,117 @@
+.container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    width: 350px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #e2e8f0;
+    animation: slideIn 0.3s ease-out both;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.iconSection {
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: #f8fafc;
+}
+
+.content {
+    flex: 1;
+    padding: 16px;
+}
+
+.title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: #1e293b;
+}
+
+.message {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.closeButton {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #94a3b8;
+    line-height: 1;
+}
+
+.closeButton:hover {
+    color: #475569;
+}
+
+.progressBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background: #3b82f6;
+    width: 100%;
+    animation: progress 6s linear both;
+}
+
+@keyframes progress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* Types */
+.success .iconSection { color: #10b981; background: #ecfdf5; }
+.success .progressBar { background: #10b981; }
+
+.error .iconSection { color: #ef4444; background: #fef2f2; }
+.error .progressBar { background: #ef4444; }
+
+.warning .iconSection { color: #f59e0b; background: #fffbeb; }
+.warning .progressBar { background: #f59e0b; }
+
+.info .iconSection { color: #3b82f6; background: #eff6ff; }
+.info .progressBar { background: #3b82f6; }
+
+/* Critical Pulse */
+.highPriority {
+    border: 2px solid #ef4444;
+    animation: slideIn 0.3s ease-out both, pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}

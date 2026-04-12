@@ -2,166 +2,175 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 
 const AuthContext = createContext(null);
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import BACKEND_URL from '../config';
 const API_BASE = `${BACKEND_URL}/api/auth`;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser]         = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading]   = useState(true);
 
-  // ── Restore session from localStorage ──────────────────
+  // ── Session Restoration (Verification) ──────────────────
+  // Instead of reading tokens (which are now httpOnly), we ask
+  // the server if we have a valid session via a profile check.
   useEffect(() => {
-    const savedUser  = localStorage.getItem('hc_user');
-    const savedToken = localStorage.getItem('hc_access_token');
-    if (savedUser && savedToken) {
-      try {
-        setUser(JSON.parse(savedUser));
-        setAccessToken(savedToken);
-      } catch {
-        localStorage.removeItem('hc_user');
-        localStorage.removeItem('hc_access_token');
-        localStorage.removeItem('hc_refresh_token');
+    const restoreSession = async () => {
+      const savedUser = localStorage.getItem('hc_user');
+      if (!savedUser) {
+        setLoading(false);
+        return;
       }
-    }
-    setLoading(false);
+
+      try {
+        // We attempt to fetch the profile. If the cookie is valid, this succeeds.
+        const res = await fetch(`${BACKEND_URL}/api/auth/profile`, {
+          headers: { 'Cache-Control': 'no-cache' },
+          credentials: 'include'
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          setUser(data.user);
+          localStorage.setItem('hc_user', JSON.stringify(data.user)); // Keep user metadata for UI
+        } else if (res.status === 401) {
+          // Token strictly invalid/expired - clear session
+          localStorage.removeItem('hc_user');
+          setUser(null);
+        } else {
+          // Server error (500) or Rate limit (429) - keep local user metadata to avoid kick-out
+          console.warn(`[AuthContext] Session restore aborted with status ${res.status}. Keeping local metadata.`);
+          const localUser = JSON.parse(savedUser);
+          setUser(localUser);
+        }
+      } catch (err) {
+        console.error('[AuthContext] Session restoration failed:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    restoreSession();
   }, []);
 
-  // ── Save tokens after login ─────────────────────────────
-  const saveSession = (userData, accToken, refToken) => {
-    setUser(userData);
-    setAccessToken(accToken);
-    localStorage.setItem('hc_user',          JSON.stringify(userData));
-    localStorage.setItem('hc_access_token',  accToken);
-    if (refToken) localStorage.setItem('hc_refresh_token', refToken);
-  };
+  // ── Logout ──────────────────────────────────────────────
+  const logout = useCallback(async () => {
+    try {
+      await fetch(`${API_BASE}/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch { /* best-effort */ }
 
-  // ── Login ───────────────────────────────────────────────
+    setUser(null);
+    localStorage.removeItem('hc_user');
+  }, []);
+
+  // ── Authenticated fetch helper ──────────────────────────
+  // Automatically includes cookies and handles 401 transparently
+  const authFetch = useCallback(async (url, options = {}) => {
+    const makeRequest = (extraOptions = {}) =>
+      fetch(url, {
+        ...options,
+        ...extraOptions,
+        credentials: 'include', // CRITICAL: Send cookies
+        headers: { 
+          ...(options.headers || {}), 
+          ...(extraOptions.headers || {}),
+          // We no longer manually attach the Authorization header!
+        }
+      });
+
+    let res;
+    try {
+      res = await makeRequest();
+    } catch (err) {
+      throw err;
+    }
+
+    // Handle session expiry / token refresh
+    if (res.status === 401) {
+      console.warn(`[AuthContext] 401 Unauthorized detected. Attempting silent refresh...`);
+      
+      try {
+        const refreshRes = await fetch(`${API_BASE}/refresh-token`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+        const refreshData = await refreshRes.json();
+
+        if (refreshData.success) {
+          console.log(`[AuthContext] Refresh successful. Retrying original request...`);
+          res = await makeRequest();
+        } else {
+          console.error(`[AuthContext] Refresh failed. Session expired.`);
+          logout();
+        }
+      } catch (refreshErr) {
+        console.error(`[AuthContext] Refresh fetch error:`, refreshErr);
+        logout();
+      }
+    }
+    return res;
+  }, [logout]);
+
+  // ── Original Auth Handlers (Simplified) ──────────────────
+  
   const login = async (email, password, role) => {
     const res  = await fetch(`${API_BASE}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, password, role })
     });
     const data = await res.json();
-
-    if (!data.success) throw data;           // caller catches & shows msg
-
-    saveSession(data.user, data.accessToken, data.refreshToken);
+    if (data.success) {
+      setUser(data.user);
+      localStorage.setItem('hc_user', JSON.stringify(data.user));
+    }
     return data;
   };
 
-  // ── Register ────────────────────────────────────────────
   const register = async (payload) => {
     const res  = await fetch(`${API_BASE}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    const data = await res.json();
-    if (!data.success) throw data;
-    return data;                              // caller redirects to /verify-otp
+    return await res.json();
   };
 
-  // ── Verify OTP ──────────────────────────────────────────
   const verifyOtp = async (email, otp, type = 'registration') => {
     const res  = await fetch(`${API_BASE}/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, otp, type })
     });
-    const data = await res.json();
-    if (!data.success) throw data;
-    return data;
+    return await res.json();
   };
 
-  // ── Verify MFA ──────────────────────────────────────────
   const verifyMfa = async (email, otp) => {
     const res = await fetch(`${BACKEND_URL}/api/auth/verify-mfa`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, otp })
     });
     const data = await res.json();
-    if (!data.success) throw data;
-
-    saveSession(data.user, data.accessToken, data.refreshToken);
+    if (data.success) {
+      setUser(data.user);
+      localStorage.setItem('hc_user', JSON.stringify(data.user));
+    }
     return data;
   };
 
-  // ── Resend OTP ──────────────────────────────────────────
   const resendOtp = async (email, type = 'registration') => {
     const res  = await fetch(`${API_BASE}/resend-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, type })
     });
-    const data = await res.json();
-    if (!data.success) throw data;
-    return data;
+    return await res.json();
   };
 
-  // ── Refresh access token silently ───────────────────────
-  const refreshAccessToken = useCallback(async () => {
-    const refToken = localStorage.getItem('hc_refresh_token');
-    if (!refToken) return null;
-
-    try {
-      const res  = await fetch(`${API_BASE}/refresh-token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: refToken })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setAccessToken(data.accessToken);
-        localStorage.setItem('hc_access_token', data.accessToken);
-        return data.accessToken;
-      }
-    } catch { /* silent */ }
-    return null;
-  }, []);
-
-  // ── Logout ──────────────────────────────────────────────
-  const logout = async () => {
-    const refToken = localStorage.getItem('hc_refresh_token');
-    try {
-      await fetch(`${API_BASE}/logout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: refToken })
-      });
-    } catch { /* best-effort */ }
-
-    setUser(null);
-    setAccessToken(null);
-    localStorage.removeItem('hc_user');
-    localStorage.removeItem('hc_access_token');
-    localStorage.removeItem('hc_refresh_token');
-  };
-
-  // ── Authenticated fetch helper ──────────────────────────
-  // Automatically attaches Bearer token; retries once on 401 after refresh
-  const authFetch = useCallback(async (url, options = {}) => {
-    let token = accessToken || localStorage.getItem('hc_access_token');
-    const makeRequest = (t) =>
-      fetch(url, {
-        ...options,
-        headers: { ...(options.headers || {}), Authorization: `Bearer ${t}` }
-      });
-
-    let res = await makeRequest(token);
-
-    if (res.status === 401) {
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        res = await makeRequest(newToken);
-      }
-    }
-    return res;
-  }, [accessToken, refreshAccessToken]);
-
-  // ── Helper to safely mutate logged in user ───────────────
   const updateUser = (newUserData) => {
     const updated = { ...user, ...newUserData };
     setUser(updated);
@@ -172,7 +181,6 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       user,
       updateUser,
-      accessToken,
       loading,
       isAuthenticated: !!user,
       login,

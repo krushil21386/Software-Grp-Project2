@@ -5,23 +5,21 @@
  * Components import individual functions; if the base URL changes,
  * only this file needs updating.
  */
+import BACKEND_URL from '../config';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const BASE_URL = BACKEND_URL;
 const BASE = `${BASE_URL}/api`;
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
-function getToken() {
-    return localStorage.getItem('hc_access_token');
-}
+// ── helpers ────────────────────────────────────────────────────────────────
 
 async function request(path, options = {}) {
-    const token = getToken();
     const res   = await fetch(`${BASE}${path}`, {
         ...options,
+        credentials: 'include', // CRITICAL: Send cookies
         headers: {
             'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...(options.headers || {}),
         },
     });
@@ -98,7 +96,7 @@ export const aiAPI = {
     analyze: (formData) =>
         fetch(`${BASE}/ai/analyze`, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${getToken()}` },
+            credentials: 'include',
             body: formData    // FormData — do NOT set Content-Type (browser adds boundary automatically)
         }).then(r => r.json()),
 };

@@ -1,4 +1,5 @@
 // AI Medicine Suggestion Logic
+import BACKEND_URL from '../config';
 import { medicineDatabase } from './mockData';
 
 export const suggestMedicine = (symptoms, age = null, allergies = []) => {
@@ -120,7 +121,7 @@ export const analyzeSymptoms = (symptoms) => {
   return analysis;
 };
 
-export const analyzeMedicalReport = async (file) => {
+export const analyzeMedicalReport = async (file, token = null, customFetch = null) => {
   const formData = new FormData();
   formData.append('report', file);
 
@@ -129,16 +130,26 @@ export const analyzeMedicalReport = async (file) => {
   let timeoutId;
   
   try {
-    // Set timeout to abort the request after 120 seconds (OCR can take time, especially on CPU)
+    // Set timeout to abort the request after 300 seconds (OCR can take time, especially on CPU)
     timeoutId = setTimeout(() => {
       controller.abort();
-    }, 120000); // 120 second (2 minute) timeout for OCR processing
+    }, 300000); // 300 second (5 minute) timeout for OCR processing
 
-    // Get backend URL from environment or default to localhost
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    // Get backend URL from centralized config
+    const backendUrl = BACKEND_URL;
     
-    const response = await fetch(`${backendUrl}/api/ai/analyze`, {
+    const fetcher = customFetch || fetch;
+    const headers = {};
+    
+    // If using standard fetch, manually add the token. 
+    // If using customFetch (like authFetch), it will handle the token itself.
+    if (!customFetch && token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetcher(`${backendUrl}/api/ai/analyze`, {
       method: 'POST',
+      headers,
       body: formData,
       signal: controller.signal,
     });

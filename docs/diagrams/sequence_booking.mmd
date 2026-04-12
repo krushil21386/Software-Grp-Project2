@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant P as Patient
+    participant S as Medicare Plus Backend
+    participant D as Doctor
+    participant DB as MongoDB
+    Note over P, DB: Real-time Appointment Orchestration
+    P->>S: Search for Doctor & Availability
+    S->>DB: Query Availability & Slots
+    DB-->>S: Return Slot Data
+    S-->>P: Display Available Slots
+    P->>S: Select Slot and Book Appointment
+    S->>DB: Save Appointment (Status: upcoming)
+    DB-->>S: Transaction Confirmed
+    par Real-time Sync
+        S->>D: Push Notification via Socket.io
+        S-->>P: Booking Confirmation & Receipt
+    end
+

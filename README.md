@@ -1,4 +1,4 @@
-# Healthcare Appointment Management System
+# Medicare Plus (Healthcare Appointment Management System)
 
 This project is a full-stack healthcare platform featuring automated appointment booking, real-time analytics, and AI-powered medical report analysis.
 

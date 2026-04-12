@@ -64,7 +64,7 @@ const DoctorLocator = () => {
       .catch(console.error);
   }, []);
 
-  const specialties = ['Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Dermatology', 'Oncology', 'Emergency Medicine', 'Internal Medicine'];
+  const specialties = ['Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Dermatology', 'Oncology', 'Internal Medicine'];
 
   useEffect(() => {
     // Get user's current location
@@ -125,9 +125,23 @@ const DoctorLocator = () => {
 
   const handleDoctorClick = (doctor) => {
     if (mapRef.current) {
-      mapRef.current.setView([doctor.hospital.lat, doctor.hospital.lng], 13, {
+      mapRef.current.flyTo([doctor.hospital.lat, doctor.hospital.lng], 15, {
         animate: true,
-        duration: 1
+        duration: 1.5,
+        easeLinearity: 0.25
+      });
+      // Automatically open the popup
+      setTimeout(() => {
+        const marker = L.marker([doctor.hospital.lat, doctor.hospital.lng]);
+        marker.addTo(mapRef.current).bindPopup(`<strong>${doctor.name}</strong><br/>${doctor.hospital.name}`).openPopup();
+      }, 1600);
+    }
+  };
+
+  const recenterMap = () => {
+    if (mapRef.current && userLocation.lat) {
+      mapRef.current.flyTo([userLocation.lat, userLocation.lng], 13, {
+        duration: 1.2
       });
     }
   };
@@ -168,6 +182,13 @@ const DoctorLocator = () => {
       <div className={styles.content}>
         <div className={styles.mapSection}>
           <div className={styles.mapContainer}>
+            <button 
+              className={styles.recenterButton} 
+              onClick={recenterMap}
+              title="Recenter to my location"
+            >
+              🎯
+            </button>
             <MapContainer
               center={mapCenter}
               zoom={mapZoom}
@@ -175,8 +196,10 @@ const DoctorLocator = () => {
               whenCreated={mapInstance => { mapRef.current = mapInstance; }}
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url={`https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}@2x.png?key=GBDWa3kpD9ey9xdK3wE4`}
+                tileSize={512}
+                zoomOffset={-1}
               />
               <MapUpdater center={mapCenter} zoom={mapZoom} />
               

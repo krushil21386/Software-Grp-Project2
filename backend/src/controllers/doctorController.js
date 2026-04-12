@@ -23,7 +23,8 @@ exports.getAvailability = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      availability: availability.schedule
+      availability: availability.schedule,
+      specificDates: availability.specificDates || []
     });
   } catch (err) {
     console.error('Error fetching availability:', err);
@@ -66,6 +67,39 @@ exports.updateAvailability = async (req, res) => {
     });
   } catch (err) {
     console.error('Error updating availability:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.updateDateAvailability = async (req, res) => {
+  try {
+    const { date, start, end, available } = req.body;
+    
+    if (!date) {
+      return res.status(400).json({ success: false, message: 'Date is required' });
+    }
+
+    let availability = await Availability.findOne({ doctorId: req.user.id });
+    if (!availability) {
+      availability = new Availability({ doctorId: req.user.id, schedule: {}, specificDates: [] });
+    }
+
+    // Remove existing entry for this date if it exists
+    availability.specificDates = availability.specificDates.filter(d => d.date !== date);
+
+    // Add new entry
+    availability.specificDates.push({ date, start, end, available });
+    
+    availability.updatedAt = Date.now();
+    await availability.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Availability for ${date} updated successfully`,
+      specificDates: availability.specificDates
+    });
+  } catch (err) {
+    console.error('Error updating date availability:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

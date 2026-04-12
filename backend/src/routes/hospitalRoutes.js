@@ -1,17 +1,13 @@
 const express = require('express');
 const router  = express.Router();
-const { hospitals } = require('../data/mockData');
+const hospitalController = require('../controllers/hospitalController');
 
 // GET /api/hospitals
-router.get('/', (req, res) => {
-    res.json({ success: true, hospitals });
-});
+router.get('/', hospitalController.getAllHospitals);
 
 // GET /api/hospitals/:id
-router.get('/:id', (req, res) => {
-    const hospital = hospitals.find(h => h.id === parseInt(req.params.id));
-    if (!hospital) return res.status(404).json({ success: false, message: 'Hospital not found' });
-    res.json({ success: true, hospital });
-});
+router.get('/:id', hospitalController.getHospitalById);
+
+// Admin endpoints can be added here later
 
 module.exports = router;

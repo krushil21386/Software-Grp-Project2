@@ -22,6 +22,8 @@ const BookAppointmentPage = () => {
   const [suggestedSlots, setSuggestedSlots] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [dbDoctors, setDbDoctors] = useState([]);
+  const [doctorAvailability, setDoctorAvailability] = useState(null); // Real backend availability
+  const [generatedTimeSlots, setGeneratedTimeSlots] = useState([]); // Dynamic slots based on availability
 
   useEffect(() => {
     const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -33,11 +35,10 @@ const BookAppointmentPage = () => {
       .catch(console.error);
   }, []);
 
-  const timeSlots = [
+  const defaultTimeSlots = [
     '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM',
-    '11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM',
-    '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM',
-    '4:30 PM', '5:00 PM'
+    '11:30 AM', '12:00 PM', '12:30 PM', '2:00 PM', '2:30 PM', 
+    '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM', '5:00 PM'
   ];
 
   // Smart slot suggestion algorithm
@@ -108,21 +109,122 @@ const BookAppointmentPage = () => {
     }
   }, [selectedDepartment, selectedHospital]);
 
+  // Fetch real availability when doctor is selected
   useEffect(() => {
-    if (selectedDoctor && date) {
-      const suggestions = getSmartSlotSuggestions(selectedDoctor.id, date);
-      setSuggestedSlots(suggestions);
-      setShowSuggestions(suggestions.length > 0);
-      
-      // Auto-select first suggestion if no time is selected
-      if (!time && suggestions.length > 0) {
-        setTime(suggestions[0]);
+    const fetchAvailability = async () => {
+      const dbDoctor = dbDoctors.find(d => d.name === selectedDoctor?.name);
+      if (dbDoctor) {
+        try {
+          const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+          const res = await authFetch(`${backendUrl}/api/doctors/availability?doctorId=${dbDoctor.id}`);
+          const data = await res.json();
+          if (data.success) {
+            setDoctorAvailability(data);
+          }
+        } catch (err) {
+          console.error('Failed to fetch doctor availability:', err);
+        }
       }
-    } else {
-      setSuggestedSlots([]);
-      setShowSuggestions(false);
+    };
+    if (selectedDoctor && dbDoctors.length > 0) fetchAvailability();
+  }, [selectedDoctor, dbDoctors, authFetch]);
+
+  // Generate dynamic time slots when date/doctor changes
+  useEffect(() => {
+    if (!doctorAvailability || !date) {
+      setGeneratedTimeSlots(defaultTimeSlots);
+      return;
     }
-  }, [selectedDoctor, date]);
+
+    // Defensive destructuring: Ensure we have objects even if doctorAvailability is a partial response
+    const { availability: schedule = {}, specificDates = [] } = doctorAvailability || {};
+    const selectedDateStr = date;
+    const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const dayName = dayNames[new Date(date).getDay()];
+
+    // 1. Check for specific date override
+    const specific = specificDates.find(d => d.date === selectedDateStr);
+    
+    let workingHours = null;
+    if (specific) {
+      if (!specific.available) {
+        setGeneratedTimeSlots([]);
+        return;
+      }
+      workingHours = { start: specific.start, end: specific.end };
+    } else {
+      // 2. Fallback to weekly schedule
+      const weekly = schedule[dayName];
+      if (!weekly || !weekly.available) {
+        setGeneratedTimeSlots([]);
+        return;
+      }
+      workingHours = { start: weekly.start, end: weekly.end };
+    }
+
+    if (workingHours) {
+      // Logic to filter defaultTimeSlots based on workingHours
+      // (Simplified: check if slot is within range)
+      const parseTime = (t) => {
+        const [time, modifier] = t.split(' ');
+        let [hours, minutes] = time.split(':');
+        if (hours === '12') hours = '00';
+        if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+        return parseInt(hours) * 60 + parseInt(minutes);
+      };
+
+      const startMin = parseTime(workingHours.start);
+      const endMin = parseTime(workingHours.end);
+
+      const filtered = defaultTimeSlots.filter(slot => {
+        const slotMin = parseTime(slot);
+        return slotMin >= startMin && slotMin <= endMin;
+      });
+      setGeneratedTimeSlots(filtered);
+    }
+  }, [doctorAvailability, date]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (selectedDoctor && date) {
+        try {
+          // Get the real doctor ID from the DB doctors list
+          const dbDoctor = dbDoctors.find(d => d.name === selectedDoctor.name);
+          if (!dbDoctor) return;
+
+          const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+          const response = await authFetch(`${backendUrl}/api/appointments/heatmap?doctorId=${dbDoctor.id}`);
+          const result = await response.json();
+          
+          if (result.success && result.bestTimeSuggestions) {
+            // Map day name to current day
+            const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const selectedDateObj = new Date(date);
+            const selectedDayName = dayNames[selectedDateObj.getDay()];
+            
+            const daySuggestion = result.bestTimeSuggestions.find(s => s.day === selectedDayName);
+            
+            if (daySuggestion) {
+              setSuggestedSlots([daySuggestion.time]); // We can expand this to more if needed
+              setShowSuggestions(true);
+              
+              // Only auto-select if no time is selected yet OR if the current time is a lunch break
+              if (!time || time === '12:00 PM' || time === '12:30 PM' || time === '1:00 PM') {
+                setTime(daySuggestion.time);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch smart suggestions:', error);
+        }
+      } else {
+        setSuggestedSlots([]);
+        setShowSuggestions(false);
+      }
+    };
+
+    fetchSuggestions();
+  }, [selectedDoctor, date, dbDoctors]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -201,7 +303,7 @@ const BookAppointmentPage = () => {
     const bookedTimes = initialAppointments
       .filter(apt => apt.doctorId === selectedDoctor.id && apt.date === date && apt.status === 'upcoming')
       .map(apt => apt.time);
-    return timeSlots.filter(slot => !bookedTimes.includes(slot)).slice(0, 5);
+    return generatedTimeSlots.filter(slot => !bookedTimes.includes(slot)).slice(0, 5);
   };
 
   const nextAvailableSlots = getNextAvailableSlots();
@@ -334,8 +436,8 @@ const BookAppointmentPage = () => {
                   onChange={(e) => setTime(e.target.value)}
                   required
                 >
-                  <option value="">Select a time</option>
-                  {timeSlots.map(slot => (
+                  <option value="">{generatedTimeSlots.length > 0 ? 'Select a time' : 'No slots available for this date'}</option>
+                  {generatedTimeSlots.map(slot => (
                     <option key={slot} value={slot}>{slot}</option>
                   ))}
                 </select>

@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './AdminDashboard.module.css';
-import { doctors as initialDoctors, hospitals, appointments as initialAppointments } from '../utils/mockData';
+import { io } from 'socket.io-client';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const [selectedTab, setSelectedTab] = useState('overview');
-  const [doctors, setDoctors] = useState(initialDoctors);
-  const [appointments] = useState(initialAppointments);
-  const [users, setUsers] = useState([
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'patient', status: 'active', createdAt: '2024-01-15' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'patient', status: 'active', createdAt: '2024-02-20' },
-    { id: 3, name: 'Dr. Sarah Johnson', email: 'sarah@hospital.com', role: 'doctor', status: 'active', createdAt: '2024-01-10' },
-  ]);
+  const [doctors, setDoctors] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState(null);
   const [auditLogs, setAuditLogs] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
   const { authFetch } = useAuth();
 
   // Statistics
@@ -46,6 +46,33 @@ const AdminDashboard = () => {
     );
   };
 
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      // Fetch Stats
+      const statsRes = await authFetch(`${backendUrl}/api/admin/stats`);
+      const statsData = await statsRes.json();
+      if (statsData.success) setStats(statsData.stats);
+
+      // Fetch Users
+      const usersRes = await authFetch(`${backendUrl}/api/admin/users`);
+      const usersData = await usersRes.json();
+      if (usersData.success) setUsers(usersData.users);
+
+      // Fetch Doctors
+      const doctorsRes = await authFetch(`${backendUrl}/api/admin/users?role=doctor`);
+      const doctorsData = await doctorsRes.json();
+      if (doctorsData.success) setDoctors(doctorsData.users);
+
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchAuditLogs = async () => {
     setLogsLoading(true);
     try {
@@ -59,6 +86,22 @@ const AdminDashboard = () => {
       console.error('Failed to fetch audit logs:', err);
     } finally {
       setLogsLoading(false);
+    }
+  };
+
+  const fetchInventoryStatus = async () => {
+    setInventoryLoading(true);
+    try {
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const res = await authFetch(`${backendUrl}/api/admin/inventory/status`);
+      const data = await res.json();
+      if (data.success) {
+        setInventory(data.inventory);
+      }
+    } catch (err) {
+      console.error('Failed to fetch inventory:', err);
+    } finally {
+      setInventoryLoading(false);
     }
   };
 
@@ -81,13 +124,21 @@ const AdminDashboard = () => {
   };
 
   React.useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  React.useEffect(() => {
     if (selectedTab === 'audit') {
       fetchAuditLogs();
+    }
+    if (selectedTab === 'inventory') {
+      fetchInventoryStatus();
     }
   }, [selectedTab]);
 
   return (
     <div className={styles.container}>
+
       <div className={styles.header}>
         <h1 className={styles.title}>Admin Dashboard</h1>
         <p className={styles.subtitle}>Manage users, doctors, and monitor system usage</p>
@@ -97,29 +148,29 @@ const AdminDashboard = () => {
         <div className={styles.statCard}>
           <div className={styles.statIcon}>👥</div>
           <div className={styles.statInfo}>
-            <h3>Total Users</h3>
-            <p className={styles.statValue}>{totalUsers}</p>
+            <h3>Total Patients</h3>
+            <p className={styles.statValue}>{stats?.totalUsers || 0}</p>
           </div>
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon}>👨‍⚕️</div>
           <div className={styles.statInfo}>
             <h3>Total Doctors</h3>
-            <p className={styles.statValue}>{totalDoctors}</p>
+            <p className={styles.statValue}>{stats?.totalDoctors || 0}</p>
           </div>
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon}>📅</div>
           <div className={styles.statInfo}>
-            <h3>Total Appointments</h3>
-            <p className={styles.statValue}>{totalAppointments}</p>
+            <h3>Appointments</h3>
+            <p className={styles.statValue}>{stats?.totalAppointments || 0}</p>
           </div>
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon}>✅</div>
           <div className={styles.statInfo}>
             <h3>Completed</h3>
-            <p className={styles.statValue}>{completedAppointments}</p>
+            <p className={styles.statValue}>{stats?.completedAppointments || 0}</p>
           </div>
         </div>
       </div>
@@ -155,6 +206,12 @@ const AdminDashboard = () => {
         >
           Audit Logs
         </button>
+        <button
+          className={`${styles.tab} ${selectedTab === 'inventory' ? styles.active : ''}`}
+          onClick={() => setSelectedTab('inventory')}
+        >
+          📦 Inventory
+        </button>
       </div>
 
       <div className={styles.content}>
@@ -174,23 +231,22 @@ const AdminDashboard = () => {
               <div className={styles.overviewCard}>
                 <h3>Recent Activity</h3>
                 <ul className={styles.activityList}>
-                  <li>New appointment booked</li>
-                  <li>User registration completed</li>
-                  <li>Doctor profile updated</li>
-                  <li>Emergency service requested</li>
+                  {stats?.recentRegistrations?.map(reg => (
+                    <li key={reg._id}>New Patient: {reg.name} ({new Date(reg.createdAt).toLocaleDateString()})</li>
+                  )) || <li>No recent active registrations</li>}
                 </ul>
               </div>
               <div className={styles.overviewCard}>
                 <h3>Appointment Status</h3>
                 <div className={styles.statusBreakdown}>
                   <div className={styles.statusItem}>
-                    <span>Upcoming: {activeAppointments}</span>
+                    <span>Upcoming: {stats?.totalAppointments || 0}</span>
                   </div>
                   <div className={styles.statusItem}>
-                    <span>Completed: {completedAppointments}</span>
+                    <span>Completed: {stats?.completedAppointments || 0}</span>
                   </div>
                   <div className={styles.statusItem}>
-                    <span>Cancelled: {appointments.filter(a => a.status === 'cancelled').length}</span>
+                    <span>Cancelled: {stats?.cancelledAppointments || 0}</span>
                   </div>
                 </div>
               </div>
@@ -359,6 +415,68 @@ const AdminDashboard = () => {
                     ) : (
                       <tr>
                         <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>No audit logs found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        )}
+
+        {selectedTab === 'inventory' && (
+          <div className={styles.auditSection}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Stock Inventory Management</h2>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <span style={{ padding: '8px 16px', borderRadius: '20px', backgroundColor: '#fee2e2', color: '#dc2626', fontSize: '13px', fontWeight: 600 }}>
+                  Low Stock Alert Threshold: 10 units
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.tableContainer}>
+              {inventoryLoading ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#cbd5e0' }}>Loading inventory...</div>
+              ) : (
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Medicine Name</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Current Stock</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inventory.length > 0 ? (
+                      inventory.map(item => (
+                        <tr key={item._id}>
+                          <td style={{ fontWeight: 600 }}>{item.name}</td>
+                          <td>{item.category}</td>
+                          <td>Rs. {item.price}</td>
+                          <td>
+                            <span style={{ 
+                              color: item.stock < 10 ? '#dc2626' : 'inherit',
+                              fontWeight: item.stock < 10 ? 700 : 400
+                            }}>
+                              {item.stock} units
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`${styles.statusBadge}`} style={{ 
+                                backgroundColor: item.stock === 0 ? '#fecaca' : item.stock < 10 ? '#ffedd5' : '#dcfce7',
+                                color: item.stock === 0 ? '#b91c1c' : item.stock < 10 ? '#9a3412' : '#15803d'
+                            }}>
+                              {item.stock === 0 ? 'Out of Stock' : item.stock < 10 ? 'Low Stock' : 'Good'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>No inventory found.</td>
                       </tr>
                     )}
                   </tbody>

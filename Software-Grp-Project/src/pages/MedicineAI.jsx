@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './MedicineAI.module.css';
 import { suggestMedicine, analyzeMedicalReport } from '../utils/medicineAI';
+import { useAuth } from '../contexts/AuthContext';
 
 const MedicineAI = () => {
   const [symptoms, setSymptoms] = useState('');
@@ -10,6 +11,7 @@ const MedicineAI = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { accessToken: token, authFetch } = useAuth();
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
 
@@ -83,71 +85,71 @@ const MedicineAI = () => {
       // If file is present, analyze it with DeepSeek-OCR-2
       if (file) {
         try {
-          const reportAnalysis = await analyzeMedicalReport(file);
+          const reportAnalysis = await analyzeMedicalReport(file, token, authFetch);
           if (reportAnalysis.success) {
-          const data = reportAnalysis.data;
-          const from = reportAnalysis.from; // Get source (gemini or logic)
-          
-          // Get identified diseases from OCR analysis
-          const identifiedDiseases = data.diseases || [];
-          const disease = data.disease || "No specific disease identified";
-          
-          // Use medicine suggestions from backend if available
-          let medicineSuggestions = data.medicineSuggestions || [];
-          
-          // If no backend suggestions, generate from identified diseases
-          if (medicineSuggestions.length === 0 && identifiedDiseases.length > 0) {
-            const combinedSymptoms = identifiedDiseases.join(', ');
-            const allergyList = allergies.split(',').map(a => a.trim()).filter(a => a);
-            const symptomBasedResults = suggestMedicine(combinedSymptoms, age ? parseInt(age) : null, allergyList);
-            medicineSuggestions = symptomBasedResults.suggestions;
-          }
-          
-          // If still no suggestions, use symptom-based approach
-          if (medicineSuggestions.length === 0) {
-            const combinedSymptoms = disease !== "No specific disease identified" 
-              ? `${symptoms} ${disease}` 
-              : symptoms;
-            const allergyList = allergies.split(',').map(a => a.trim()).filter(a => a);
-            const symptomBasedResults = suggestMedicine(combinedSymptoms, age ? parseInt(age) : null, allergyList);
-            medicineSuggestions = symptomBasedResults.suggestions;
-          }
+            const data = reportAnalysis.data;
+            const from = reportAnalysis.from; // Get source (gemini or logic)
 
-          // Merge specialized AI data with OCR results
-          aiResults = {
-            suggestions: medicineSuggestions,
-            matchedSymptoms: identifiedDiseases.length > 0 ? identifiedDiseases : (symptoms ? [symptoms] : []),
-            severityWarnings: data.diagnosisReport?.findings?.filter(f => f.status !== 'Normal').map(f => f.message) || [],
-            disclaimer: 'These suggestions are based on OCR analysis of your medical report. Always consult a healthcare professional before taking any medication.',
-            fromReport: true, // Flag for canvas effect
-            from: from, // Pass along the source
-            extractedDisease: disease,
-            identifiedDiseases: identifiedDiseases,
-            extractedText: data.rawText,
-            extractedValues: data.extractedValues, // {testName, value, units, range}
-            diagnosisReport: data.diagnosisReport
-          };
+            // Get identified diseases from OCR analysis
+            const identifiedDiseases = data.diseases || [];
+            const disease = data.disease || "No specific disease identified";
+
+            // Use medicine suggestions from backend if available
+            let medicineSuggestions = data.medicineSuggestions || [];
+
+            // If no backend suggestions, generate from identified diseases
+            if (medicineSuggestions.length === 0 && identifiedDiseases.length > 0) {
+              const combinedSymptoms = identifiedDiseases.join(', ');
+              const allergyList = allergies.split(',').map(a => a.trim()).filter(a => a);
+              const symptomBasedResults = suggestMedicine(combinedSymptoms, age ? parseInt(age) : null, allergyList);
+              medicineSuggestions = symptomBasedResults.suggestions;
+            }
+
+            // If still no suggestions, use symptom-based approach
+            if (medicineSuggestions.length === 0) {
+              const combinedSymptoms = disease !== "No specific disease identified"
+                ? `${symptoms} ${disease}`
+                : symptoms;
+              const allergyList = allergies.split(',').map(a => a.trim()).filter(a => a);
+              const symptomBasedResults = suggestMedicine(combinedSymptoms, age ? parseInt(age) : null, allergyList);
+              medicineSuggestions = symptomBasedResults.suggestions;
+            }
+
+            // Merge specialized AI data with OCR results
+            aiResults = {
+              suggestions: medicineSuggestions,
+              matchedSymptoms: identifiedDiseases.length > 0 ? identifiedDiseases : (symptoms ? [symptoms] : []),
+              severityWarnings: data.diagnosisReport?.findings?.filter(f => f.status !== 'Normal').map(f => f.message) || [],
+              disclaimer: 'These suggestions are based on OCR analysis of your medical report. Always consult a healthcare professional before taking any medication.',
+              fromReport: true, // Flag for canvas effect
+              from: from, // Pass along the source
+              extractedDisease: disease,
+              identifiedDiseases: identifiedDiseases,
+              extractedText: data.rawText,
+              extractedValues: data.extractedValues, // {testName, value, units, range}
+              diagnosisReport: data.diagnosisReport
+            };
           }
         } catch (reportError) {
           // Handle backend unavailability gracefully
           const errorMessage = reportError.message || '';
-          if (errorMessage === 'BACKEND_UNAVAILABLE' || 
-              errorMessage === 'BACKEND_TIMEOUT' ||
-              reportError.name === 'AbortError' ||
-              errorMessage.includes('aborted') ||
-              errorMessage.includes('timeout')) {
+          if (errorMessage === 'BACKEND_UNAVAILABLE' ||
+            errorMessage === 'BACKEND_TIMEOUT' ||
+            reportError.name === 'AbortError' ||
+            errorMessage.includes('aborted') ||
+            errorMessage.includes('timeout')) {
             console.warn('Backend server is not available or timed out. Falling back to symptom-based analysis.');
-            
+
             // Fallback to symptom-based analysis
             const allergyList = allergies.split(',').map(a => a.trim()).filter(a => a);
             const fallbackResults = suggestMedicine(symptoms || 'general symptoms', age ? parseInt(age) : null, allergyList);
-            
+
             // Add a warning about backend unavailability
             fallbackResults.backendUnavailable = true;
             fallbackResults.backendMessage = (errorMessage === 'BACKEND_TIMEOUT' || errorMessage.includes('timeout') || reportError.name === 'AbortError')
               ? 'OCR processing timed out (takes 1-2 minutes). Using symptom-based analysis instead. Please try again or use symptom-based analysis.'
               : 'Backend server is not running. Using symptom-based analysis instead. Please start the backend server for full OCR analysis.';
-            
+
             aiResults = fallbackResults;
           } else {
             // Re-throw other errors
@@ -166,11 +168,11 @@ const MedicineAI = () => {
 
     } catch (error) {
       console.error("AI Error", error);
-      
+
       // Provide more helpful error messages
       let errorMessage = "Failed to analyze. Please try again.";
       const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      
+
       if (error.message === 'BACKEND_UNAVAILABLE') {
         errorMessage = `Backend server is not running. Please start the backend server for full OCR analysis, or use symptom-based analysis without uploading a file.`;
       } else if (error.message === 'BACKEND_TIMEOUT') {
@@ -178,7 +180,7 @@ const MedicineAI = () => {
       } else if (error.message.includes('Failed to fetch')) {
         errorMessage = `Cannot connect to backend server at ${backendUrl}. Please ensure the backend server is running.`;
       }
-      
+
       alert(errorMessage);
     } finally {
       setLoading(false);
@@ -188,6 +190,105 @@ const MedicineAI = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
+        {/* Results Header with High Precision Badge */}
+        {results && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 className={styles.resultsTitle}>Medical Analysis Report</h2>
+              <div style={{ 
+                background: 'linear-gradient(135deg, #FFD700, #FFA500)', 
+                color: '#000', 
+                padding: '6px 14px', 
+                borderRadius: '20px', 
+                fontSize: '12px', 
+                fontWeight: '800', 
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <span style={{ fontSize: '16px' }}>✨</span> High Precision AI Enabled
+              </div>
+            </div>
+
+            {/* Primary Diagnosis Alert Box */}
+            {results.disease && (
+              <div style={{ 
+                background: 'rgba(220, 20, 60, 0.08)', 
+                border: '2px solid #DC143C', 
+                borderRadius: '16px', 
+                padding: '32px 24px', 
+                marginBottom: '32px',
+                textAlign: 'center',
+                boxShadow: '0 10px 40px rgba(220, 20, 60, 0.08)',
+                animation: 'fadeIn 0.5s ease-out'
+              }}>
+                <span style={{ 
+                  color: '#DC143C', 
+                  fontSize: '11px', 
+                  fontWeight: '900', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '3px',
+                  display: 'block',
+                  marginBottom: '12px',
+                  opacity: 0.8
+                }}>
+                  Primary Clinical Diagnosis
+                </span>
+                <h1 style={{ 
+                  color: '#DC143C', 
+                  fontSize: '42px', 
+                  fontWeight: '900', 
+                  margin: '0',
+                  lineHeight: '1.1',
+                  textTransform: 'capitalize'
+                }}>
+                  {results.disease}
+                </h1>
+                <p style={{ 
+                  color: '#475569', 
+                  fontSize: '17px', 
+                  marginTop: '16px', 
+                  lineHeight: '1.6',
+                  maxWidth: '800px',
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+                  fontWeight: '500'
+                }}>
+                  {results.summary}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Confidence Meter */}
+        {results && results.confidenceScore !== undefined && (
+          <div style={{
+            background: '#f8fafc',
+            padding: '16px',
+            borderRadius: '12px',
+            marginBottom: '24px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span style={{ fontSize: '14px', fontWeight: '600', color: '#64748b' }}>Diagnostic Confidence</span>
+              <span style={{ fontSize: '14px', fontWeight: '800', color: results.confidenceScore > 80 ? '#10b981' : (results.confidenceScore > 50 ? '#f59e0b' : '#ef4444') }}>
+                {results.confidenceScore}% {results.confidenceScore > 80 ? ' (Very High)' : (results.confidenceScore > 50 ? ' (Moderate)' : ' (Low Coverage)')}
+              </span>
+            </div>
+            <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{
+                width: `${results.confidenceScore}%`,
+                height: '100%',
+                background: results.confidenceScore > 80 ? '#10b981' : (results.confidenceScore > 50 ? '#f59e0b' : '#ef4444'),
+                transition: 'width 1s ease-out'
+              }}></div>
+            </div>
+          </div>
+        )}
         <h1 className={styles.title}>AI Medicine Suggestion</h1>
         <p className={styles.subtitle}>
           Enter your symptoms and get personalized medicine recommendations
@@ -196,7 +297,7 @@ const MedicineAI = () => {
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>📄 Upload Medical Report (Optional - Uses Hugging Face)</label>
+          <label className={styles.label}>📄 Upload Medical Report (Advanced Gemini 2.x AI)</label>
           <input
             type="file"
             accept="image/*"
@@ -204,7 +305,7 @@ const MedicineAI = () => {
             className={styles.input}
           />
           <small style={{ color: '#cbd5e0', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-            Upload a clear image of your medical report. Our Hugging Face AI will extract text, identify diseases, and suggest medicines automatically.
+            Upload a clear image of your medical report. Our Gemini 2.x AI will extract test data, identify diseases, and suggest treatment paths in simple English.
           </small>
 
           {imagePreview && (
@@ -269,14 +370,14 @@ const MedicineAI = () => {
       {results && (
         <div className={styles.results}>
           {results.backendUnavailable && (
-            <div className={styles.warningBox} style={{ 
-              backgroundColor: 'rgba(239, 68, 68, 0.1)', 
-              color: 'var(--color-text-primary)', 
-              borderColor: 'var(--color-crimson)', 
-              border: '2px solid var(--color-crimson)', 
-              borderRadius: '12px', 
-              padding: '20px', 
-              marginBottom: '24px' 
+            <div className={styles.warningBox} style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              color: 'var(--color-text-primary)',
+              borderColor: 'var(--color-crimson)',
+              border: '2px solid var(--color-crimson)',
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '24px'
             }}>
               <h3 style={{ color: 'var(--color-crimson)', marginBottom: '12px', fontSize: '18px' }}>⚠️ Backend Server Unavailable</h3>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.6' }}>
@@ -287,21 +388,21 @@ const MedicineAI = () => {
               </p>
             </div>
           )}
-          
+
           {results.fromReport && (
             <div className={styles.warningBox} style={{ backgroundColor: '#ffffff', color: 'var(--color-text-primary)', borderColor: '#DC143C', border: '2px solid #DC143C', borderRadius: '16px', padding: '24px', marginBottom: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-              <h3 style={{ color: '#DC143C', marginBottom: '16px', fontSize: '24px' }}>📋 {results.from === 'huggingface' ? 'Hugging Face AI' : 'AI Analysis'} Analysis</h3>
-              
+              <h3 style={{ color: '#DC143C', marginBottom: '16px', fontSize: '24px' }}>📋 {results.from === 'gemini' ? 'Gemini 2.x AI Analysis' : 'AI Analysis Result'}</h3>
+
               {results.identifiedDiseases && results.identifiedDiseases.length > 0 && (
                 <div style={{ marginBottom: '16px' }}>
                   <strong style={{ color: '#DC143C' }}>Identified Diseases/Conditions:</strong>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
                     {results.identifiedDiseases.map((disease, idx) => (
-                      <span key={idx} style={{ 
-                        background: 'rgba(239, 68, 68, 0.3)', 
-                        color: '#ef4444', 
-                        padding: '6px 12px', 
-                        borderRadius: '20px', 
+                      <span key={idx} style={{
+                        background: 'rgba(239, 68, 68, 0.3)',
+                        color: '#ef4444',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
                         fontSize: '14px',
                         fontWeight: '600',
                         border: '1px solid rgba(239, 68, 68, 0.5)'
@@ -312,7 +413,7 @@ const MedicineAI = () => {
                   </div>
                 </div>
               )}
-              
+
               <p style={{ marginBottom: '12px' }}>
                 <strong style={{ color: '#DC143C' }}>Overall Assessment:</strong> <span style={{ color: '#ef4444', fontWeight: '600' }}>{results.extractedDisease}</span>
               </p>
@@ -322,7 +423,7 @@ const MedicineAI = () => {
                   <strong style={{ color: '#DC143C' }}>Key Findings:</strong>
                   <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
                     {results.diagnosisReport.findings.map((finding, idx) => (
-                      <li key={idx} style={{ 
+                      <li key={idx} style={{
                         color: finding.status === 'Normal' ? '#10b981' : '#ef4444',
                         marginBottom: '6px',
                         fontSize: '14px'
@@ -337,8 +438,8 @@ const MedicineAI = () => {
           )}
 
           {results.extractedValues && results.extractedValues.length > 0 && (
-            <div className={styles.tableContainer} style={{ 
-              margin: '32px 0', 
+            <div className={styles.tableContainer} style={{
+              margin: '32px 0',
               overflowX: 'auto',
               background: '#ffffff',
               borderRadius: '16px',
@@ -346,13 +447,14 @@ const MedicineAI = () => {
               border: '1px solid var(--color-border)',
               boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08)'
             }}>
-              <h3 style={{ marginBottom: '16px', color: '#DC143C', fontSize: '20px' }}>🔬 Lab Results ({results.from === 'huggingface' ? 'AI Extracted' : 'Extracted'})</h3>
+              <h3 style={{ color: '#DC143C', marginBottom: '16px', fontSize: '20px' }}>🔬 Lab Results ({results.from === 'gemini' ? 'Gemini AI Extracted' : 'Extracted'})</h3>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                 <thead>
                   <tr style={{ background: 'rgba(220, 20, 60, 0.05)', textAlign: 'left' }}>
                     <th style={{ padding: '16px 12px', borderBottom: '2px solid var(--color-border)', color: '#DC143C', fontWeight: '700' }}>Test Name</th>
                     <th style={{ padding: '16px 12px', borderBottom: '2px solid var(--color-border)', color: '#DC143C', fontWeight: '700' }}>Value</th>
                     <th style={{ padding: '16px 12px', borderBottom: '2px solid var(--color-border)', color: '#DC143C', fontWeight: '700' }}>Normal Range</th>
+                    <th style={{ padding: '16px 12px', borderBottom: '2px solid var(--color-border)', color: '#DC143C', fontWeight: '700' }}>Clinical Significance</th>
                     <th style={{ padding: '16px 12px', borderBottom: '2px solid var(--color-border)', color: '#DC143C', fontWeight: '700' }}>Status</th>
                   </tr>
                 </thead>
@@ -360,14 +462,26 @@ const MedicineAI = () => {
                   {results.extractedValues.map((item, idx) => {
                     let statusColor = '#10b981';
                     let statusText = 'Normal';
-                    if (item.value < item.range.min) { statusColor = '#ef4444'; statusText = 'Low'; }
-                    if (item.value > item.range.max) { statusColor = '#ef4444'; statusText = 'High'; }
+
+                    // Defensive checks for range data
+                    const min = item.range?.min;
+                    const max = item.range?.max;
+                    const hasRange = item.range && (min !== null && min !== undefined) && (max !== null && max !== undefined);
+                    const rangeText = hasRange ? `${min} - ${max} ${item.units}` : 'N/A';
+
+                    if (hasRange && item.value < (min ?? -Infinity)) { statusColor = '#ef4444'; statusText = 'Low'; }
+                    if (hasRange && item.value > (max ?? Infinity)) { statusColor = '#ef4444'; statusText = 'High'; }
 
                     return (
                       <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)', background: statusText !== 'Normal' ? 'rgba(239, 68, 68, 0.05)' : 'transparent' }}>
                         <td style={{ padding: '14px 12px', color: 'var(--color-text-primary)', fontWeight: '500' }}>{item.testName}</td>
                         <td style={{ padding: '14px 12px', color: 'var(--color-text-primary)', fontWeight: '700' }}>{item.value} {item.units}</td>
-                        <td style={{ padding: '14px 12px', color: 'var(--color-text-muted)' }}>{item.range.min} - {item.range.max} {item.units}</td>
+                        <td style={{ padding: '14px 12px', color: 'var(--color-text-muted)' }}>
+                          <div>{rangeText}</div>
+                        </td>
+                        <td style={{ padding: '14px 12px', color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: '13px', maxWidth: '250px' }}>
+                          {item.significance || 'Analyzed automatically based on marker values.'}
+                        </td>
                         <td style={{ padding: '14px 12px', color: statusColor, fontWeight: '800' }}>{statusText}</td>
                       </tr>
                     );
@@ -403,7 +517,7 @@ const MedicineAI = () => {
                 💊 Recommended Medicines (Based on {results.fromReport ? 'Report Analysis' : 'Symptoms'}):
               </h3>
               {results.suggestions.map((medicine, idx) => (
-                <div key={idx} className={styles.medicineCard} style={{ 
+                <div key={idx} className={styles.medicineCard} style={{
                   background: 'linear-gradient(150deg, rgba(30, 64, 175, 0.4), rgba(15, 23, 42, 0.9))',
                   backdropFilter: 'blur(16px)',
                   borderRadius: '16px',
@@ -415,10 +529,10 @@ const MedicineAI = () => {
                   <div className={styles.medicineHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <h4 style={{ color: '#ffffff', fontSize: '20px', fontWeight: '700', margin: 0 }}>{medicine.name}</h4>
                     {medicine.confidence && (
-                      <span className={styles.confidence} style={{ 
-                        background: 'rgba(220, 20, 60, 0.3)', 
-                        color: '#DC143C', 
-                        padding: '4px 12px', 
+                      <span className={styles.confidence} style={{
+                        background: 'rgba(220, 20, 60, 0.3)',
+                        color: '#DC143C',
+                        padding: '4px 12px',
                         borderRadius: '12px',
                         fontSize: '12px',
                         fontWeight: '600'
@@ -427,10 +541,10 @@ const MedicineAI = () => {
                       </span>
                     )}
                     {medicine.forDisease && (
-                      <span style={{ 
-                        background: 'rgba(239, 68, 68, 0.3)', 
-                        color: '#ef4444', 
-                        padding: '4px 12px', 
+                      <span style={{
+                        background: 'rgba(239, 68, 68, 0.3)',
+                        color: '#ef4444',
+                        padding: '4px 12px',
                         borderRadius: '12px',
                         fontSize: '12px',
                         fontWeight: '600',
@@ -461,11 +575,11 @@ const MedicineAI = () => {
                     )}
                   </div>
                   {medicine.symptom && !medicine.forDisease && (
-                    <div className={styles.symptomBadge} style={{ 
-                      marginTop: '12px', 
-                      padding: '8px 12px', 
-                      background: 'rgba(220, 20, 60, 0.3)', 
-                      color: '#DC143C', 
+                    <div className={styles.symptomBadge} style={{
+                      marginTop: '12px',
+                      padding: '8px 12px',
+                      background: 'rgba(220, 20, 60, 0.3)',
+                      color: '#DC143C',
                       borderRadius: '8px',
                       fontSize: '12px',
                       fontWeight: '600'

@@ -1,0 +1,35 @@
+graph TD
+    subgraph "External Entities"
+        Patient((Patient))
+        Doctor((Doctor))
+        Admin((Admin))
+    end
+    subgraph "Processes"
+        P1[1.0 Authentication & Identity]
+        P2[2.0 Appointment Management]
+        P3[3.0 AI Medical Analysis]
+        P4[4.0 Operational Analytics]
+    end
+    subgraph "Data Stores"
+        D1[(MongoDB: Users & Auth)]
+        D2[(MongoDB: Appointments)]
+        D3[(MongoDB: Records & Logs)]
+    end
+    subgraph "External Services"
+        Gemini[Google Gemini API]
+    end
+    Patient -->|Credentials| P1
+    Doctor -->|Credentials| P1
+    P1 <--> D1
+    Patient -->|Booking Data| P2
+    P2 <--> D2
+    P2 -->|Real-time Update| Doctor
+    Patient -->|Medical Reports| P3
+    P3 <--> D3
+    P3 -->|Request Processing| Gemini
+    Gemini -->|Structured Insights| P3
+    Admin -->|Query Logs/Heatmaps| P4
+    P4 <--> D3
+    P4 <--> D2
+    P4 -->|Visual Reports| Admin
+

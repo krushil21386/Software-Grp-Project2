@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import styles from './PatientDashboard.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import ProfileImageUpload from '../components/ProfileImageUpload/ProfileImageUpload';
+import { DashboardSkeleton } from '../components/Skeleton/Skeleton';
 
 const PatientDashboard = () => {
   const { authFetch, user } = useAuth();
@@ -12,6 +13,9 @@ const PatientDashboard = () => {
   const [completedAppointments, setCompletedAppointments] = useState([]);
   const [cancelledAppointments, setCancelledAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cancelModal, setCancelModal] = useState({ show: false, appointmentId: null });
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -33,29 +37,35 @@ const PatientDashboard = () => {
     fetchAppointments();
   }, [authFetch]);
 
-  const handleCancelAppointment = async (appointmentId) => {
-    if (window.confirm('Are you sure you want to cancel this appointment?')) {
-      try {
-        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const response = await authFetch(`${backendUrl}/api/appointments/${appointmentId}/reject`, {
-          method: 'PUT',
-        });
-        if (response.ok) {
-          const cancelledApt = upcomingAppointments.find(a => a._id === appointmentId);
-          if (cancelledApt) {
-            cancelledApt.status = 'cancelled';
-            setCancelledAppointments(prev => [cancelledApt, ...prev]);
-          }
-          setUpcomingAppointments(prev => prev.filter(apt => apt._id !== appointmentId));
+  const handleCancelAppointment = async () => {
+    if (!cancelReason.trim()) return;
+    setCancelling(true);
+    try {
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await authFetch(`${backendUrl}/api/appointments/${cancelModal.appointmentId}/reject`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: cancelReason })
+      });
+      if (response.ok) {
+        const cancelledApt = upcomingAppointments.find(a => a._id === cancelModal.appointmentId);
+        if (cancelledApt) {
+          cancelledApt.status = 'cancelled';
+          setCancelledAppointments(prev => [cancelledApt, ...prev]);
         }
-      } catch (error) {
-        console.error('Error canceling appointment:', error);
+        setUpcomingAppointments(prev => prev.filter(apt => apt._id !== cancelModal.appointmentId));
+        setCancelModal({ show: false, appointmentId: null });
+        setCancelReason('');
       }
+    } catch (error) {
+      console.error('Error canceling appointment:', error);
+    } finally {
+      setCancelling(false);
     }
   };
 
   if (loading) {
-    return <div className={styles.container} style={{textAlign:'center', padding:'50px'}}>Loading dashboard...</div>;
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -95,13 +105,13 @@ const PatientDashboard = () => {
             <p className={styles.statValue}>{completedAppointments.length}</p>
           </div>
         </div>
-        <div className={styles.statCard}>
+        <Link to="/prescriptions" className={styles.statCard} style={{ textDecoration: 'none' }}>
           <div className={styles.statIcon}>💊</div>
           <div className={styles.statInfo}>
-            <h3>Active Prescriptions</h3>
-            <p className={styles.statValue}>0</p>
+            <h3>Clinical Prescriptions</h3>
+            <p className={styles.statValue}>View All</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       <div className={styles.quickActions}>
@@ -124,6 +134,11 @@ const PatientDashboard = () => {
           <div className={styles.actionIcon}>🏥</div>
           <h3>Browse Hospitals</h3>
           <p>Explore our network</p>
+        </Link>
+        <Link to="/prescriptions" className={styles.actionCard} style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)' }}>
+          <div className={styles.actionIcon}>🧾</div>
+          <h3>Prescription Center</h3>
+          <p>Download secure medical documents</p>
         </Link>
       </div>
 
@@ -166,7 +181,7 @@ const PatientDashboard = () => {
                   <div className={styles.appointmentActions}>
                     <button 
                       className={styles.cancelButton}
-                      onClick={() => handleCancelAppointment(appointment._id)}
+                      onClick={() => setCancelModal({ show: true, appointmentId: appointment._id })}
                     >
                       Cancel
                     </button>
@@ -242,6 +257,67 @@ const PatientDashboard = () => {
           </>
         )}
       </div>
+
+      {/* Cancel Appointment Modal */}
+      {cancelModal.show && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }} onClick={() => { setCancelModal({ show: false, appointmentId: null }); setCancelReason(''); }}>
+          <div style={{
+            background: '#fff', borderRadius: '20px', width: '90%', maxWidth: '480px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{
+              padding: '24px 28px', borderBottom: '1px solid #e2e8f0',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: '#1e293b' }}>Cancel Appointment</h3>
+              <button onClick={() => { setCancelModal({ show: false, appointmentId: null }); setCancelReason(''); }}
+                style={{ background: 'none', border: 'none', fontSize: '1.8rem', cursor: 'pointer', color: '#94a3b8', lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ padding: '24px 28px' }}>
+              <p style={{ margin: '0 0 16px', fontSize: '14px', color: '#64748b' }}>
+                Are you sure you want to cancel this appointment? Please provide a reason:
+              </p>
+              <textarea
+                placeholder="e.g. Schedule conflict, feeling better..."
+                value={cancelReason}
+                onChange={e => setCancelReason(e.target.value)}
+                rows={3}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: '10px',
+                  border: '1px solid #e2e8f0', fontSize: '14px', resize: 'vertical',
+                  outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div style={{
+              padding: '16px 28px', borderTop: '1px solid #e2e8f0',
+              display: 'flex', justifyContent: 'flex-end', gap: '12px'
+            }}>
+              <button
+                onClick={() => { setCancelModal({ show: false, appointmentId: null }); setCancelReason(''); }}
+                style={{
+                  padding: '10px 24px', borderRadius: '10px', background: '#f8fafc',
+                  color: '#1e293b', border: '1px solid #e2e8f0', fontSize: '14px',
+                  fontWeight: 600, cursor: 'pointer'
+                }}>Keep Appointment</button>
+              <button
+                onClick={handleCancelAppointment}
+                disabled={!cancelReason.trim() || cancelling}
+                style={{
+                  padding: '10px 24px', borderRadius: '10px',
+                  background: cancelReason.trim() ? '#DC143C' : '#fca5a5',
+                  color: '#fff', border: 'none', fontSize: '14px',
+                  fontWeight: 600, cursor: cancelReason.trim() ? 'pointer' : 'not-allowed',
+                  opacity: cancelling ? 0.6 : 1
+                }}>{cancelling ? 'Cancelling...' : 'Confirm Cancellation'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,0 +1,41 @@
+graph TD
+    %% Level 2 for Process 2.0 Appointment Management
+    Patient((Patient))
+    Doctor((Doctor))
+
+    subgraph P2[2.0 Appointment Management]
+      P2_1[2.1 Search Availability]
+      P2_2[2.2 Create Booking]
+      P2_3[2.3 Send Notifications]
+      P2_4[2.4 Reschedule/Cancel]
+      P2_5[2.5 Generate Heatmap]
+    end
+
+    D_Users[(Users)]
+    D_Appts[(Appointments)]
+    D_Logs[(Audit Logs)]
+
+    %% Flows
+    Patient -->|search criteria| P2_1
+    P2_1 -->|query| D_Appts
+    P2_1 -->|available slots| Patient
+
+    Patient -->|booking details| P2_2
+    P2_2 -->|validate patient/doctor| D_Users
+    P2_2 -->|save| D_Appts
+    P2_2 -->|log| D_Logs
+
+    P2_2 --> P2_3
+    P2_3 -->|notify booking| Patient
+    P2_3 -->|notify booking| Doctor
+
+    Patient -->|reschedule/cancel + reason| P2_4
+    P2_4 -->|update| D_Appts
+    P2_4 -->|log| D_Logs
+    P2_4 -->|notify| Patient
+    P2_4 -->|notify| Doctor
+
+    Doctor -->|dashboard request| P2_5
+    P2_5 -->|aggregate| D_Appts
+    P2_5 -->|heatmap matrix| Doctor
+

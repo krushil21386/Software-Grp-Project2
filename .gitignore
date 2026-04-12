@@ -50,3 +50,6 @@ desktop.ini
 
 # ── DeepSeek model folder (large, downloaded separately) ──────────────────────
 DeepSeek-OCR-2/
+.github.zip
+/*.log
+backend/logs/*

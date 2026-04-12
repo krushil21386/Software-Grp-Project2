@@ -1,0 +1,17 @@
+graph TD
+    %% Level 0 Context Diagram
+    Patient((Patient))
+    Doctor((Doctor))
+    Admin((Admin))
+
+    subgraph Medicare Plus System
+      APIGW[[REST API + Socket.io]]
+    end
+
+    Patient <--> |Auth, Appointments, Records| APIGW
+    Doctor  <--> |Auth, Availability, Records| APIGW
+    Admin   <--> |Users, Analytics, Audits| APIGW
+
+    APIGW <--> |CRUD| DB[(MongoDB)]
+    APIGW <--> |Analyze Reports| AI[[Gemini / OCR]]
+

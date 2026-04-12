@@ -186,6 +186,22 @@
   color: var(--color-charcoal);
 }
 
+.toggleLabel {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 80px;
+  text-align: right;
+  transition: color 0.3s ease;
+}
+
+.availableLabel {
+  color: var(--color-success);
+}
+
+.unavailableLabel {
+  color: var(--color-text-muted);
+}
+
 .toggle {
   position: relative;
   display: inline-block;
@@ -224,11 +240,13 @@
 }
 
 .toggle input:checked + .slider {
-  background-color: var(--color-crimson-soft);
+  background-color: var(--color-success);
 }
 
 .toggle input:checked + .slider:before {
   transform: translateX(26px);
+  background-color: white;
+  box-shadow: 0 0 4px rgba(0,0,0,0.2);
 }
 
 .timeInputs {

@@ -1,7 +1,6 @@
 const { HfInference } = require('@huggingface/inference');
 const fs = require('fs');
 const Tesseract = require('tesseract.js');
-require('dotenv').config();
 
 const hf = new HfInference(process.env.HUGGING_FACE_API_TOKEN);
 

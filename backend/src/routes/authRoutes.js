@@ -3,22 +3,26 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const authenticate = require('../middleware/authenticate');
 const { authLimiter } = require('../middleware/rateLimiter');
+const validate = require('../middleware/validate');
+const { register, login, resetPassword } = require('../validators/authValidator');
 
-// ── Public routes (No strict limiter) ─────────────────
+// --- AUTHENTICATION ROUTES ---
+
+// Public routes (No strict limiter)
 router.get('/doctors', authController.getAllDoctors);
 router.post('/refresh-token', authController.refreshToken);
 
-// Apply strict rate limiting to sensitive auth endpoints
-router.use(authLimiter);
+// Sensitive routes (Strict rate limiting)
+router.post('/register', authLimiter, register, validate, authController.register);
+router.post('/verify-otp', authLimiter, authController.verifyOtp);
+router.post('/resend-otp', authLimiter, authController.resendOtp);
+router.post('/login', authLimiter, login, validate, authController.login);
+router.post('/forgot-password', authLimiter, authController.forgotPassword);
+router.post('/reset-password', authLimiter, resetPassword, validate, authController.resetPassword);
+router.post('/verify-mfa', authLimiter, authController.verifyMfa);
 
-router.post('/register', authController.register);
-router.post('/verify-otp', authController.verifyOtp);
-router.post('/resend-otp', authController.resendOtp);
-router.post('/login', authController.login);
+// Shared session operations
 router.post('/logout', authController.logout);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
-router.post('/verify-mfa', authController.verifyMfa);
 
 // ── Protected routes (require valid JWT) ──────────
 router.get('/profile', authenticate, authController.getProfile);

@@ -1,5 +1,5 @@
-# Use Node.js 18 alpine
-FROM node:18-alpine
+# Use Node.js 18 alpine (cached)
+FROM docker.io/library/node:18-alpine
 
 # Set the working directory
 WORKDIR /app
