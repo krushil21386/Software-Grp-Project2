@@ -641,10 +641,10 @@ EMAIL_PASS=your-16-char-app-password
 **Recommended — Manual:**
 ```bash
 # Terminal 1
-cd backend && npm run dev
+cd backend; npm run dev;
 
 # Terminal 2
-cd Software-Grp-Project && npm run dev
+cd Software-Grp-Project; npm run dev;
 ```
 
 **Production `.env` checklist** *(for when Docker deployment is completed)*:
